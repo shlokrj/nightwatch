@@ -1,6 +1,7 @@
 import { useState } from "react";
 import LocationSearch from "./components/LocationSearch";
 import SkyReport from "./components/SkyReport";
+import StarField from "./components/StarField";
 import { fetchSkyReport } from "./api/sky";
 
 export default function App() {
@@ -22,19 +23,28 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-night-950 px-4 py-12 flex flex-col items-center gap-10">
-      <header className="text-center">
-        <h1 className="text-4xl font-bold tracking-tight text-slate-100">Nightwatch</h1>
-        <p className="text-slate-400 mt-2 text-lg">What's in the sky tonight?</p>
-      </header>
+    <div className="relative min-h-screen">
+      <StarField />
 
-      <LocationSearch onSearch={handleSearch} loading={loading} />
+      <div className="relative z-10 px-4 py-16 flex flex-col items-center gap-12">
+        <header className="text-center">
+          <h1 className="text-5xl font-bold tracking-widest text-white uppercase"
+              style={{ letterSpacing: "0.2em", textShadow: "0 0 40px rgba(139,92,246,0.6)" }}>
+            Nightwatch
+          </h1>
+          <p className="text-slate-400 mt-3 text-lg tracking-wide">
+            What's in the sky tonight?
+          </p>
+        </header>
 
-      {error && (
-        <p className="text-red-400 text-sm">{error}</p>
-      )}
+        <LocationSearch onSearch={handleSearch} loading={loading} />
 
-      {report && <SkyReport report={report} />}
+        {error && (
+          <p className="text-red-400 text-sm">{error}</p>
+        )}
+
+        {report && <SkyReport report={report} />}
+      </div>
     </div>
   );
 }
