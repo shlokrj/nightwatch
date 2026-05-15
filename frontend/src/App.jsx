@@ -22,10 +22,10 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-night-950 px-4 py-12 flex flex-col items-center gap-10">
+    <div className="min-h-screen bg-night-950 stars-bg px-4 py-12 flex flex-col items-center gap-10">
       <header className="text-center">
-        <h1 className="text-4xl font-bold tracking-tight text-slate-100">Nightwatch</h1>
-        <p className="text-slate-400 mt-2 text-lg">What's in the sky tonight?</p>
+        <h1 className="text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-cyan-400 drop-shadow-lg">Nightwatch</h1>
+        <p className="text-cyan-100/70 mt-3 text-lg font-light tracking-wide uppercase">What's in the sky tonight?</p>
       </header>
 
       <LocationSearch onSearch={handleSearch} loading={loading} />
