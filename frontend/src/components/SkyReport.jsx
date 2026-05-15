@@ -7,14 +7,14 @@ export default function SkyReport({ report }) {
   return (
     <div className="w-full max-w-3xl space-y-8">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-slate-100">{report.city}</h2>
-        <p className="text-slate-400 mt-1">{report.date}</p>
+      <div className="text-center sm:text-left">
+        <h2 className="text-3xl font-bold text-cyan-50 drop-shadow-md">{report.city}</h2>
+        <p className="text-cyan-200/60 mt-1 uppercase tracking-widest text-sm">{report.date}</p>
       </div>
 
       {/* Summary */}
-      <div className="rounded-xl bg-indigo-950 border border-indigo-800 p-5">
-        <p className="text-slate-200 leading-relaxed">{report.summary}</p>
+      <div className="rounded-2xl bg-indigo-900/30 backdrop-blur-md border border-indigo-500/20 p-6 shadow-[0_0_30px_rgba(79,70,229,0.15)]">
+        <p className="text-indigo-100 leading-relaxed text-lg font-light">{report.summary}</p>
       </div>
 
       {/* Sun & Twilight */}
@@ -26,9 +26,9 @@ export default function SkyReport({ report }) {
           ["Astronomical Twilight", report.astronomical_twilight_end],
           ["Sunrise", report.sunrise],
         ].map(([label, val]) => (
-          <div key={label} className="rounded-lg bg-night-800 border border-night-700 p-4">
-            <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">{label}</p>
-            <p className="text-slate-100 font-medium">{val}</p>
+          <div key={label} className="rounded-xl bg-night-900/40 backdrop-blur-sm border border-white/10 p-4 hover:bg-night-800/50 transition-colors">
+            <p className="text-xs uppercase tracking-wider text-cyan-200/50 mb-1">{label}</p>
+            <p className="text-cyan-50 font-medium">{val}</p>
           </div>
         ))}
       </div>

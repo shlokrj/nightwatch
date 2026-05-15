@@ -58,4 +58,4 @@ App runs at `http://localhost:5173`. API requests proxy to `:8000`.
 
 ## Deployment
 
-> Work in progress — planning to deploy as a live website.
+> Work in progress: planning to deploy as a live website.
