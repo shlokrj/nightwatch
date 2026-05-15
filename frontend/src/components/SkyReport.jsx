@@ -1,53 +1,64 @@
 import MoonCard from "./MoonCard";
 import PlanetCard from "./PlanetCard";
 
+function TimeCard({ label, value }) {
+  return (
+    <div className="quiet-panel rounded-lg p-4">
+      <p className="text-sm font-medium text-stellar-gold/70">{label}</p>
+      <p className="mt-2 text-xl font-semibold text-stellar-pearl">{value}</p>
+    </div>
+  );
+}
+
 export default function SkyReport({ report }) {
   const visiblePlanets = report.planets.filter((p) => p.visible);
 
   return (
-    <div className="w-full max-w-3xl space-y-8">
-      {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-slate-100">{report.city}</h2>
-        <p className="text-slate-400 mt-1">{report.date}</p>
-      </div>
+    <div className="w-full max-w-5xl space-y-6">
+      <section className="glass-panel rounded-xl p-5 sm:p-7">
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div>
+            <p className="font-elegant text-xl font-semibold text-stellar-gold/90">
+              Observation
+            </p>
+            <h2 className="mt-1 font-elegant text-4xl font-semibold text-stellar-pearl sm:text-5xl">
+              {report.city}
+            </h2>
+          </div>
+          <p className="rounded-full border border-stellar-pearl/10 bg-stellar-pearl/10 px-4 py-2 text-sm font-medium text-slate-200/80">
+            {report.date}
+          </p>
+        </div>
+        <p className="mt-6 max-w-4xl text-lg font-light leading-8 text-slate-100/80">
+          {report.summary}
+        </p>
+      </section>
 
-      {/* Summary */}
-      <div className="rounded-xl bg-indigo-950 border border-indigo-800 p-5">
-        <p className="text-slate-200 leading-relaxed">{report.summary}</p>
-      </div>
-
-      {/* Sun & Twilight */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {[
           ["Sunset", report.sunset],
-          ["Civil Twilight", report.civil_twilight_end],
-          ["Nautical Twilight", report.nautical_twilight_end],
-          ["Astronomical Twilight", report.astronomical_twilight_end],
+          ["Civil", report.civil_twilight_end],
+          ["Nautical", report.nautical_twilight_end],
+          ["Astronomical", report.astronomical_twilight_end],
           ["Sunrise", report.sunrise],
         ].map(([label, val]) => (
-          <div key={label} className="rounded-lg bg-night-800 border border-night-700 p-4">
-            <p className="text-xs uppercase tracking-wider text-slate-500 mb-1">{label}</p>
-            <p className="text-slate-100 font-medium">{val}</p>
-          </div>
+          <TimeCard key={label} label={label} value={val} />
         ))}
-      </div>
+      </section>
 
-      {/* Moon */}
       <MoonCard moon={report.moon} />
 
-      {/* Planets */}
       {visiblePlanets.length > 0 && (
-        <div>
-          <h3 className="text-sm font-semibold uppercase tracking-widest text-slate-400 mb-3">
+        <section>
+          <h3 className="mb-3 font-elegant text-2xl font-semibold text-stellar-gold/90">
             Visible Planets
           </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {visiblePlanets.map((p) => (
               <PlanetCard key={p.name} planet={p} />
             ))}
           </div>
-        </div>
+        </section>
       )}
     </div>
   );

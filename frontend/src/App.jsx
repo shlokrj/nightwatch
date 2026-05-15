@@ -23,16 +23,23 @@ export default function App() {
   }
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen overflow-hidden bg-night-950 text-stellar-pearl">
       <StarField />
 
-      <div className="relative z-10 px-4 py-16 flex flex-col items-center gap-12">
-        <header className="text-center">
-          <h1 className="text-5xl font-bold tracking-widest text-white uppercase"
-              style={{ letterSpacing: "0.2em", textShadow: "0 0 40px rgba(139,92,246,0.6)" }}>
-            Nightwatch
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col items-center gap-10 px-5 pb-20 pt-12 sm:gap-12 sm:pt-16">
+        <header className="w-full text-center">
+          <p className="font-elegant text-xl font-semibold text-stellar-gold/90 sm:text-2xl">
+            Your stargazing guide
+          </p>
+          <h1
+            className="wordmark mt-3 inline-flex flex-wrap justify-center gap-x-4 font-display text-5xl sm:gap-x-6 sm:text-7xl"
+            aria-label="Night Watch"
+          >
+            <span>Night</span>
+            <span>Watch</span>
           </h1>
-          <p className="text-slate-400 mt-3 text-lg tracking-wide">
+          <div className="wordmark-rule" />
+          <p className="mx-auto mt-5 max-w-xl text-base font-light leading-7 text-slate-200/80 sm:text-lg">
             What's in the sky tonight?
           </p>
         </header>
@@ -40,7 +47,9 @@ export default function App() {
         <LocationSearch onSearch={handleSearch} loading={loading} />
 
         {error && (
-          <p className="text-red-400 text-sm">{error}</p>
+          <p className="quiet-panel rounded-lg px-4 py-3 text-sm font-medium text-rose-200">
+            {error}
+          </p>
         )}
 
         {report && <SkyReport report={report} />}

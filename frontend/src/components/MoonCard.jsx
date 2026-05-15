@@ -1,13 +1,30 @@
 export default function MoonCard({ moon }) {
+  const illumination = Math.max(0, Math.min(100, Number(moon.illumination) || 0));
+
   return (
-    <div className="rounded-xl bg-night-800 border border-night-700 p-5">
-      <h3 className="text-sm font-semibold uppercase tracking-widest text-slate-400 mb-3">Moon</h3>
-      <p className="text-2xl font-semibold text-slate-100">{moon.phase}</p>
-      <p className="text-slate-400 mt-1">{moon.illumination}% illuminated</p>
-      <div className="mt-4 flex gap-6 text-sm text-slate-400">
-        {moon.rise && <span>Rise: <span className="text-slate-200">{moon.rise}</span></span>}
-        {moon.set && <span>Set: <span className="text-slate-200">{moon.set}</span></span>}
+    <section className="glass-panel grid gap-6 rounded-xl p-5 sm:grid-cols-[auto_1fr] sm:items-center sm:p-6">
+      <div
+        className="moon-orb mx-auto sm:mx-0"
+        style={{ "--moon-shadow": (100 - illumination) / 100 }}
+      />
+
+      <div>
+        <h3 className="font-elegant text-2xl font-semibold text-stellar-gold/90">Moon</h3>
+        <p className="mt-2 text-3xl font-semibold text-stellar-pearl">{moon.phase}</p>
+        <p className="mt-1 text-slate-200/70">{moon.illumination}% illuminated</p>
+        <div className="mt-5 flex flex-wrap gap-3 text-sm text-slate-200/70">
+          {moon.rise && (
+            <span className="rounded-full border border-stellar-pearl/10 bg-stellar-pearl/10 px-4 py-2">
+              Rise <span className="font-semibold text-stellar-pearl">{moon.rise}</span>
+            </span>
+          )}
+          {moon.set && (
+            <span className="rounded-full border border-stellar-pearl/10 bg-stellar-pearl/10 px-4 py-2">
+              Set <span className="font-semibold text-stellar-pearl">{moon.set}</span>
+            </span>
+          )}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

@@ -9,20 +9,28 @@ export default function LocationSearch({ onSearch, loading }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-3 w-full max-w-xl">
+    <form
+      onSubmit={handleSubmit}
+      className="glass-panel flex w-full max-w-2xl flex-col gap-3 rounded-xl p-3 sm:flex-row"
+    >
+      <label className="sr-only" htmlFor="city-search">
+        City
+      </label>
       <input
+        id="city-search"
         type="text"
         value={city}
         onChange={(e) => setCity(e.target.value)}
-        placeholder="Enter a city, e.g. San Francisco, CA"
-        className="flex-1 px-4 py-3 rounded-lg bg-night-800 border border-night-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        placeholder="San Francisco, CA"
+        autoComplete="address-level2"
+        className="input-glow min-h-14 flex-1 rounded-lg border border-stellar-pearl/10 bg-night-950/75 px-4 text-base text-stellar-pearl placeholder:text-slate-400/70 focus:outline-none"
       />
       <button
         type="submit"
         disabled={loading}
-        className="px-6 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 font-medium transition-colors"
+        className="gold-button min-h-14 rounded-lg px-7 text-sm font-bold uppercase transition"
       >
-        {loading ? "Loading…" : "Search"}
+        {loading ? "Scanning..." : "Observe"}
       </button>
     </form>
   );

@@ -1,10 +1,59 @@
 import { useEffect, useRef } from "react";
 
-const NUM_STARS = 320;
-const NUM_BRIGHT = 18;
+const STAR_LAYERS = [
+  { count: 760, radius: [0.22, 0.72], alpha: [0.14, 0.56], speed: [0.04, 0.12] },
+  { count: 230, radius: [0.62, 1.18], alpha: [0.28, 0.82], speed: [0.08, 0.18] },
+  { count: 46, radius: [1.15, 2.08], alpha: [0.52, 1], speed: [0.1, 0.22], glow: true },
+];
+const DUST_COUNT = 520;
 
-function randomBetween(a, b) {
-  return a + Math.random() * (b - a);
+function createRandom(seed) {
+  let value = seed;
+
+  return function random() {
+    value = (value * 1664525 + 1013904223) % 4294967296;
+    return value / 4294967296;
+  };
+}
+
+function randomBetween(random, min, max) {
+  return min + random() * (max - min);
+}
+
+function makeStars() {
+  const random = createRandom(20260515);
+
+  return STAR_LAYERS.flatMap((layer, layerIndex) =>
+    Array.from({ length: layer.count }, () => ({
+      x: random(),
+      y: random(),
+      r: randomBetween(random, layer.radius[0], layer.radius[1]),
+      baseAlpha: randomBetween(random, layer.alpha[0], layer.alpha[1]),
+      speed: randomBetween(random, layer.speed[0], layer.speed[1]),
+      offset: random() * Math.PI * 2,
+      hue: randomBetween(random, 52, 205),
+      layer: layerIndex,
+      glow: Boolean(layer.glow),
+      drift: randomBetween(random, 0.18, 0.62),
+    }))
+  );
+}
+
+function makeDust() {
+  const random = createRandom(918273);
+
+  return Array.from({ length: DUST_COUNT }, () => {
+    const path = randomBetween(random, -0.08, 1.08);
+    const spread = randomBetween(random, -0.18, 0.18);
+
+    return {
+      x: path + spread * 0.44,
+      y: 0.8 - path * 0.52 + spread,
+      r: randomBetween(random, 0.18, 0.82),
+      alpha: randomBetween(random, 0.025, 0.11),
+      tone: random(),
+    };
+  }).filter((p) => p.x > -0.08 && p.x < 1.08 && p.y > -0.08 && p.y < 1.08);
 }
 
 export default function StarField() {
@@ -13,80 +62,98 @@ export default function StarField() {
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
+    const stars = makeStars();
+    const dust = makeDust();
     let animId;
+    let width = 0;
+    let height = 0;
 
     function resize() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const ratio = Math.min(window.devicePixelRatio || 1, 2);
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = Math.floor(width * ratio);
+      canvas.height = Math.floor(height * ratio);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
     }
     resize();
     window.addEventListener("resize", resize);
 
-    // Generate stars once
-    const stars = Array.from({ length: NUM_STARS }, () => ({
-      x: Math.random(),
-      y: Math.random(),
-      r: randomBetween(0.4, 1.1),
-      baseAlpha: randomBetween(0.4, 0.9),
-      speed: randomBetween(0.0003, 0.0012),
-      offset: Math.random() * Math.PI * 2,
-    }));
+    function draw(now) {
+      const seconds = now / 1000;
+      ctx.clearRect(0, 0, width, height);
 
-    // A few larger, brighter accent stars
-    const brightStars = Array.from({ length: NUM_BRIGHT }, () => ({
-      x: Math.random(),
-      y: Math.random(),
-      r: randomBetween(1.2, 2.2),
-      baseAlpha: randomBetween(0.6, 1.0),
-      speed: randomBetween(0.0004, 0.001),
-      offset: Math.random() * Math.PI * 2,
-    }));
+      const sky = ctx.createLinearGradient(0, 0, width, height);
+      sky.addColorStop(0, "#010207");
+      sky.addColorStop(0.32, "#061018");
+      sky.addColorStop(0.68, "#08070f");
+      sky.addColorStop(1, "#010207");
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, width, height);
 
-    let t = 0;
-    function draw() {
-      const w = canvas.width;
-      const h = canvas.height;
-      ctx.clearRect(0, 0, w, h);
+      ctx.save();
+      ctx.globalCompositeOperation = "screen";
+      for (const point of dust) {
+        const alpha = point.alpha * (0.76 + 0.24 * Math.sin(seconds * 0.28 + point.x * 9));
+        const warm = point.tone > 0.62;
+        ctx.fillStyle = warm
+          ? `rgba(245, 217, 139, ${alpha})`
+          : `rgba(119, 226, 221, ${alpha})`;
+        ctx.beginPath();
+        ctx.arc(point.x * width, point.y * height, point.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
 
-      // Deep space gradient background
-      const grad = ctx.createLinearGradient(0, 0, 0, h);
-      grad.addColorStop(0, "#04050e");
-      grad.addColorStop(0.5, "#070a18");
-      grad.addColorStop(1, "#04050e");
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, w, h);
-
-      // Draw regular stars
+      ctx.save();
+      ctx.globalCompositeOperation = "lighter";
       for (const s of stars) {
-        const alpha = s.baseAlpha * (0.6 + 0.4 * Math.sin(t * s.speed * 1000 + s.offset));
+        const driftX = Math.sin(seconds * s.drift + s.offset) * (s.layer + 1) * 0.55;
+        const driftY = Math.cos(seconds * s.drift * 0.72 + s.offset) * (s.layer + 1) * 0.32;
+        const x = s.x * width + driftX;
+        const y = s.y * height + driftY;
+        const alpha = s.baseAlpha * (0.72 + 0.28 * Math.sin(seconds * s.speed + s.offset));
+
+        if (s.glow) {
+          const glow = ctx.createRadialGradient(x, y, 0, x, y, s.r * 7);
+          glow.addColorStop(0, `rgba(248, 243, 231, ${alpha * 0.36})`);
+          glow.addColorStop(0.42, `rgba(119, 226, 221, ${alpha * 0.11})`);
+          glow.addColorStop(1, "rgba(119, 226, 221, 0)");
+          ctx.fillStyle = glow;
+          ctx.beginPath();
+          ctx.arc(x, y, s.r * 7, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = `rgba(248, 243, 231, ${alpha * 0.24})`;
+          ctx.lineWidth = 0.42;
+          ctx.beginPath();
+          ctx.moveTo(x - s.r * 4.4, y);
+          ctx.lineTo(x + s.r * 4.4, y);
+          ctx.moveTo(x, y - s.r * 3.4);
+          ctx.lineTo(x, y + s.r * 3.4);
+          ctx.stroke();
+        }
+
         ctx.beginPath();
-        ctx.arc(s.x * w, s.y * h, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+        ctx.arc(x, y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${s.hue}, 46%, 92%, ${alpha})`;
         ctx.fill();
       }
+      ctx.restore();
 
-      // Draw bright accent stars with a soft glow
-      for (const s of brightStars) {
-        const alpha = s.baseAlpha * (0.7 + 0.3 * Math.sin(t * s.speed * 1000 + s.offset));
-        const glow = ctx.createRadialGradient(s.x * w, s.y * h, 0, s.x * w, s.y * h, s.r * 5);
-        glow.addColorStop(0, `rgba(200, 220, 255, ${alpha})`);
-        glow.addColorStop(1, "rgba(200, 220, 255, 0)");
-        ctx.beginPath();
-        ctx.arc(s.x * w, s.y * h, s.r * 5, 0, Math.PI * 2);
-        ctx.fillStyle = glow;
-        ctx.fill();
+      const vignette = ctx.createRadialGradient(width * 0.5, height * 0.42, 0, width * 0.5, height * 0.5, Math.max(width, height) * 0.78);
+      vignette.addColorStop(0, "rgba(2, 3, 10, 0)");
+      vignette.addColorStop(0.68, "rgba(2, 3, 10, 0.25)");
+      vignette.addColorStop(1, "rgba(2, 3, 10, 0.82)");
+      ctx.fillStyle = vignette;
+      ctx.fillRect(0, 0, width, height);
 
-        ctx.beginPath();
-        ctx.arc(s.x * w, s.y * h, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(240, 248, 255, ${alpha})`;
-        ctx.fill();
-      }
-
-      t += 16;
       animId = requestAnimationFrame(draw);
     }
 
-    draw();
+    animId = requestAnimationFrame(draw);
 
     return () => {
       cancelAnimationFrame(animId);
@@ -97,7 +164,7 @@ export default function StarField() {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 w-full h-full"
+      className="fixed inset-0 h-full w-full"
       style={{ zIndex: 0 }}
     />
   );
