@@ -14,7 +14,7 @@ export default function LocationSearch({ onSearch, loading }) {
         type="text"
         value={city}
         onChange={(e) => setCity(e.target.value)}
-        placeholder="Enter a city, e.g. Milpitas, CA"
+        placeholder="Enter a city, e.g. San Francisco, CA"
         className="flex-1 px-4 py-3 rounded-lg bg-night-800 border border-night-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
       />
       <button
