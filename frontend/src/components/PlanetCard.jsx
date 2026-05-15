@@ -1,34 +1,34 @@
 const PLANET_STYLES = {
   Venus: {
-    slug: "venus",
+    className: "planet-venus",
     color: "#e6c48f",
     highlight: "#fff0c9",
     glow: "rgba(230, 196, 143, 0.34)",
     meterEnd: "#b98f5f",
   },
   Jupiter: {
-    slug: "jupiter",
+    className: "planet-jupiter",
     color: "#d9a06a",
     highlight: "#ffe0b6",
     glow: "rgba(217, 160, 106, 0.32)",
     meterEnd: "#b87960",
   },
   Mars: {
-    slug: "mars",
+    className: "planet-mars",
     color: "#d56d5c",
     highlight: "#ffd0c6",
     glow: "rgba(213, 109, 92, 0.34)",
     meterEnd: "#ad574b",
   },
   Saturn: {
-    slug: "saturn",
+    className: "planet-saturn",
     color: "#d9bd85",
     highlight: "#fff1be",
     glow: "rgba(217, 189, 133, 0.34)",
     meterEnd: "#b79a68",
   },
   Mercury: {
-    slug: "mercury",
+    className: "planet-mercury",
     color: "#b9844f",
     highlight: "#f0c995",
     glow: "rgba(185, 132, 79, 0.26)",
@@ -40,7 +40,7 @@ export default function PlanetCard({ planet }) {
   if (!planet.visible) return null;
 
   const style = PLANET_STYLES[planet.name] ?? {
-    slug: "default",
+    className: "planet-default",
     color: "#d58ac3",
     highlight: "#efffff",
     glow: "rgba(213, 138, 195, 0.22)",
@@ -62,7 +62,7 @@ export default function PlanetCard({ planet }) {
     >
       <div className="flex items-start gap-4">
         <div
-          className={`planet-glyph planet-${style.slug} shrink-0`}
+          className={`planet-glyph ${style.className} shrink-0`}
           role="img"
           aria-label={`${planet.name} illustration`}
         >
