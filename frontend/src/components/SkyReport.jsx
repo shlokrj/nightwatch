@@ -10,8 +10,23 @@ function TimeCard({ label, value }) {
   );
 }
 
+function formatReportDate(date) {
+  const parsed = new Date(`${date}T00:00:00`);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return date;
+  }
+
+  return parsed.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 export default function SkyReport({ report }) {
   const visiblePlanets = report.planets.filter((p) => p.visible);
+  const displayDate = formatReportDate(report.date);
 
   return (
     <div className="w-full max-w-5xl space-y-6">
@@ -25,8 +40,8 @@ export default function SkyReport({ report }) {
               {report.city}
             </h2>
           </div>
-          <p className="rounded-full border border-stellar-pearl/10 bg-stellar-pearl/10 px-4 py-2 text-sm font-medium text-slate-200/80">
-            {report.date}
+          <p className="rounded-full border border-stellar-gold/35 bg-stellar-gold/10 px-4 py-2 text-sm font-semibold text-stellar-gold">
+            {displayDate}
           </p>
         </div>
         <p className="mt-6 max-w-4xl text-lg font-light leading-8 text-slate-100/80">

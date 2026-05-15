@@ -31,7 +31,7 @@ function makeStars() {
       baseAlpha: randomBetween(random, layer.alpha[0], layer.alpha[1]),
       speed: randomBetween(random, layer.speed[0], layer.speed[1]),
       offset: random() * Math.PI * 2,
-      hue: randomBetween(random, 52, 205),
+      hue: randomBetween(random, 42, 56),
       layer: layerIndex,
       glow: Boolean(layer.glow),
       drift: randomBetween(random, 0.18, 0.62),
@@ -97,10 +97,10 @@ export default function StarField() {
       ctx.globalCompositeOperation = "screen";
       for (const point of dust) {
         const alpha = point.alpha * (0.76 + 0.24 * Math.sin(seconds * 0.28 + point.x * 9));
-        const warm = point.tone > 0.62;
-        ctx.fillStyle = warm
-          ? `rgba(245, 217, 139, ${alpha})`
-          : `rgba(119, 226, 221, ${alpha})`;
+        const blush = point.tone > 0.74;
+        ctx.fillStyle = blush
+          ? `rgba(213, 138, 195, ${alpha * 0.42})`
+          : `rgba(244, 210, 142, ${alpha * 0.78})`;
         ctx.beginPath();
         ctx.arc(point.x * width, point.y * height, point.r, 0, Math.PI * 2);
         ctx.fill();
@@ -118,9 +118,9 @@ export default function StarField() {
 
         if (s.glow) {
           const glow = ctx.createRadialGradient(x, y, 0, x, y, s.r * 7);
-          glow.addColorStop(0, `rgba(248, 243, 231, ${alpha * 0.36})`);
-          glow.addColorStop(0.42, `rgba(119, 226, 221, ${alpha * 0.11})`);
-          glow.addColorStop(1, "rgba(119, 226, 221, 0)");
+          glow.addColorStop(0, `rgba(255, 242, 199, ${alpha * 0.33})`);
+          glow.addColorStop(0.42, `rgba(233, 163, 107, ${alpha * 0.1})`);
+          glow.addColorStop(1, "rgba(233, 163, 107, 0)");
           ctx.fillStyle = glow;
           ctx.beginPath();
           ctx.arc(x, y, s.r * 7, 0, Math.PI * 2);
@@ -138,7 +138,7 @@ export default function StarField() {
 
         ctx.beginPath();
         ctx.arc(x, y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${s.hue}, 46%, 92%, ${alpha})`;
+        ctx.fillStyle = `hsla(${s.hue}, 45%, 88%, ${alpha})`;
         ctx.fill();
       }
       ctx.restore();

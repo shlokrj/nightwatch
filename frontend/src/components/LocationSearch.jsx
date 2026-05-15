@@ -21,7 +21,7 @@ export default function LocationSearch({ onSearch, loading }) {
         type="text"
         value={city}
         onChange={(e) => setCity(e.target.value)}
-        placeholder="San Francisco, CA"
+        placeholder="Enter a city, e.g. San Francisco, CA"
         autoComplete="address-level2"
         className="input-glow min-h-14 flex-1 rounded-lg border border-stellar-pearl/10 bg-night-950/75 px-4 text-base text-stellar-pearl placeholder:text-slate-400/70 focus:outline-none"
       />

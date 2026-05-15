@@ -30,9 +30,9 @@ export default function PlanetCard({ planet }) {
   if (!planet.visible) return null;
 
   const style = PLANET_STYLES[planet.name] ?? {
-    color: "#ff7adf",
+    color: "#d58ac3",
     highlight: "#efffff",
-    glow: "rgba(255, 122, 223, 0.3)",
+    glow: "rgba(213, 138, 195, 0.22)",
   };
   const altitude = Math.max(0, Math.min(90, Number(planet.altitude) || 0));
   const altitudeWidth = `${Math.max(8, (altitude / 90) * 100)}%`;

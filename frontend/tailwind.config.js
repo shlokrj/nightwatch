@@ -12,13 +12,13 @@ export default {
           600: "#2e4452",
         },
         stellar: {
-          ember: "#ff9a3c",
-          crimson: "#ff3f63",
-          violet: "#8f55ff",
-          pink: "#ff7adf",
-          gold: "#ffb45f",
+          ember: "#e9a36b",
+          crimson: "#d76673",
+          violet: "#9272cf",
+          pink: "#d58ac3",
+          gold: "#efbd7c",
           pearl: "#f8f3e7",
-          rose: "#ff7aa8",
+          rose: "#d986a0",
         },
       },
       fontFamily: {
@@ -29,7 +29,7 @@ export default {
       },
       boxShadow: {
         observatory: "0 26px 90px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.06)",
-        aurora: "0 0 34px rgba(255, 63, 99, 0.26), 0 0 78px rgba(143, 85, 255, 0.2)",
+        aurora: "0 0 28px rgba(215, 102, 115, 0.18), 0 0 64px rgba(146, 114, 207, 0.14)",
       },
     },
   },
