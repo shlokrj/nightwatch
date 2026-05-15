@@ -1,28 +1,38 @@
 const PLANET_STYLES = {
   Venus: {
-    color: "#f3d77d",
-    highlight: "#fff5c8",
-    glow: "rgba(243, 215, 125, 0.38)",
+    slug: "venus",
+    color: "#e6c48f",
+    highlight: "#fff0c9",
+    glow: "rgba(230, 196, 143, 0.34)",
+    meterEnd: "#b98f5f",
   },
   Jupiter: {
+    slug: "jupiter",
     color: "#d9a06a",
     highlight: "#ffe0b6",
     glow: "rgba(217, 160, 106, 0.32)",
+    meterEnd: "#b87960",
   },
   Mars: {
+    slug: "mars",
     color: "#d56d5c",
     highlight: "#ffd0c6",
     glow: "rgba(213, 109, 92, 0.34)",
+    meterEnd: "#ad574b",
   },
   Saturn: {
+    slug: "saturn",
     color: "#d9bd85",
     highlight: "#fff1be",
     glow: "rgba(217, 189, 133, 0.34)",
+    meterEnd: "#b79a68",
   },
   Mercury: {
-    color: "#bfc8ca",
-    highlight: "#ffffff",
-    glow: "rgba(191, 200, 202, 0.28)",
+    slug: "mercury",
+    color: "#b9844f",
+    highlight: "#f0c995",
+    glow: "rgba(185, 132, 79, 0.26)",
+    meterEnd: "#7c583c",
   },
 };
 
@@ -30,12 +40,15 @@ export default function PlanetCard({ planet }) {
   if (!planet.visible) return null;
 
   const style = PLANET_STYLES[planet.name] ?? {
+    slug: "default",
     color: "#d58ac3",
     highlight: "#efffff",
     glow: "rgba(213, 138, 195, 0.22)",
+    meterEnd: "#9272cf",
   };
   const altitude = Math.max(0, Math.min(90, Number(planet.altitude) || 0));
-  const altitudeWidth = `${Math.max(8, (altitude / 90) * 100)}%`;
+  const altitudeWidth = `${(altitude / 90) * 100}%`;
+  const altitudeLabel = `${planet.altitude} degrees above horizon`;
 
   return (
     <article
@@ -44,19 +57,43 @@ export default function PlanetCard({ planet }) {
         "--planet-color": style.color,
         "--planet-hi": style.highlight,
         "--planet-glow": style.glow,
+        "--planet-meter-end": style.meterEnd,
       }}
     >
       <div className="flex items-start gap-4">
-        <div className="planet-glyph shrink-0" />
+        <div
+          className={`planet-glyph planet-${style.slug} shrink-0`}
+          role="img"
+          aria-label={`${planet.name} illustration`}
+        >
+          <span className="planet-body" />
+        </div>
         <div className="min-w-0 flex-1">
           <h3 className="text-2xl font-semibold text-stellar-pearl">{planet.name}</h3>
           <p className="mt-1 text-sm text-slate-200/70">
-            {planet.direction} / {planet.altitude} degrees above horizon
+            {planet.direction} / {altitudeLabel}
           </p>
         </div>
       </div>
-      <div className="planet-meter mt-5">
-        <span style={{ width: altitudeWidth }} />
+      <div className="mt-5">
+        <div className="mb-2 flex items-center justify-between text-xs text-slate-200/55">
+          <span>Altitude</span>
+          <span className="font-semibold text-slate-100/80">{planet.altitude} degrees</span>
+        </div>
+        <div
+          className="planet-meter"
+          aria-label={`Altitude meter, ${altitudeLabel}`}
+          role="meter"
+          aria-valuemin="0"
+          aria-valuemax="90"
+          aria-valuenow={altitude}
+        >
+          <span className="planet-meter-fill" style={{ width: altitudeWidth }} />
+        </div>
+        <div className="mt-1 flex items-center justify-between text-[0.68rem] text-slate-300/45">
+          <span>Horizon</span>
+          <span>Zenith</span>
+        </div>
       </div>
       {planet.best_time && (
         <p className="mt-4 text-sm text-slate-200/75">
