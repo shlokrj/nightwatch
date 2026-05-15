@@ -35,36 +35,45 @@
     position: relative;
     display: inline-block;
     color: transparent;
-    background: linear-gradient(180deg, #ffffff 4%, #f7e8b2 42%, #9ff6ef 72%, #ffffff 100%);
+    background:
+      linear-gradient(90deg, #ffb45f 0%, #ff4f57 29%, #8f55ff 66%, #ff7adf 100%);
     -webkit-background-clip: text;
     background-clip: text;
+    font-family: "Cormorant Garamond", "Cinzel Decorative", Georgia, serif;
+    font-style: italic;
+    font-weight: 700;
+    font-variant-ligatures: discretionary-ligatures;
+    line-height: 0.95;
     text-shadow:
-      0 0 22px rgba(119, 226, 221, 0.38),
-      0 0 54px rgba(245, 217, 139, 0.2);
+      0 0 18px rgba(255, 122, 223, 0.32),
+      0 0 48px rgba(143, 85, 255, 0.26),
+      0 0 72px rgba(255, 79, 87, 0.16);
   }
 
   .wordmark::before {
     content: "";
     position: absolute;
-    inset: -0.18em -0.28em;
+    inset: -0.22em -0.24em;
     z-index: -1;
     background:
-      linear-gradient(90deg, rgba(119, 226, 221, 0), rgba(119, 226, 221, 0.18), rgba(245, 217, 139, 0.14), rgba(119, 226, 221, 0));
-    filter: blur(18px);
-    opacity: 0.8;
+      radial-gradient(circle at 15% 44%, rgba(255, 154, 60, 0.24), transparent 28%),
+      radial-gradient(circle at 50% 48%, rgba(255, 63, 99, 0.2), transparent 31%),
+      radial-gradient(circle at 84% 44%, rgba(255, 122, 223, 0.22), transparent 34%);
+    filter: blur(20px);
+    opacity: 0.92;
   }
 
   .wordmark-rule {
     height: 1px;
     width: min(24rem, 74vw);
     margin: 1.1rem auto 0;
-    background: linear-gradient(90deg, transparent, rgba(248, 243, 231, 0.48), rgba(119, 226, 221, 0.45), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 154, 60, 0.52), rgba(255, 63, 99, 0.54), rgba(143, 85, 255, 0.54), rgba(255, 122, 223, 0.52), transparent);
   }
 
   .glass-panel {
     border: 1px solid rgba(248, 243, 231, 0.13);
     background:
-      linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(119, 226, 221, 0.035) 45%, rgba(245, 217, 139, 0.045)),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 79, 87, 0.04) 38%, rgba(143, 85, 255, 0.045) 72%, rgba(255, 122, 223, 0.035)),
       rgba(5, 9, 16, 0.74);
     box-shadow: 0 26px 90px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.06);
     backdrop-filter: blur(24px) saturate(140%);
@@ -78,9 +87,9 @@
   }
 
   .gold-button {
-    background: linear-gradient(135deg, #fff4c7, #f0c66d 48%, #77e2dd);
-    color: #061016;
-    box-shadow: 0 14px 34px rgba(119, 226, 221, 0.2), 0 10px 30px rgba(245, 217, 139, 0.12);
+    background: linear-gradient(135deg, #ffb45f 0%, #ff4f57 36%, #8f55ff 72%, #ff7adf 100%);
+    color: #fff7f3;
+    box-shadow: 0 14px 34px rgba(255, 63, 99, 0.24), 0 10px 34px rgba(143, 85, 255, 0.2);
   }
 
   .gold-button:hover:not(:disabled) {
@@ -94,8 +103,8 @@
   }
 
   .input-glow:focus {
-    border-color: rgba(119, 226, 221, 0.74);
-    box-shadow: 0 0 0 4px rgba(119, 226, 221, 0.12), 0 0 38px rgba(119, 226, 221, 0.1);
+    border-color: rgba(255, 122, 223, 0.74);
+    box-shadow: 0 0 0 4px rgba(255, 63, 99, 0.12), 0 0 38px rgba(143, 85, 255, 0.16);
   }
 
   .moon-orb {
@@ -109,7 +118,7 @@
     box-shadow:
       inset -18px -22px 34px rgba(14, 18, 24, 0.42),
       0 0 34px rgba(248, 243, 231, 0.18),
-      0 0 74px rgba(119, 226, 221, 0.1);
+      0 0 74px rgba(255, 122, 223, 0.12);
   }
 
   .moon-orb::before {
@@ -152,6 +161,6 @@
     display: block;
     height: 100%;
     border-radius: inherit;
-    background: linear-gradient(90deg, var(--planet-color), #77e2dd);
+    background: linear-gradient(90deg, var(--planet-color), #ff4f57, #8f55ff, #ff7adf);
   }
 }

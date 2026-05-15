@@ -32,11 +32,10 @@ export default function App() {
             Your stargazing guide
           </p>
           <h1
-            className="wordmark mt-3 inline-flex flex-wrap justify-center gap-x-4 font-display text-5xl sm:gap-x-6 sm:text-7xl"
-            aria-label="Night Watch"
+            className="wordmark mt-3 text-6xl sm:text-8xl"
+            aria-label="Nightwatch"
           >
-            <span>Night</span>
-            <span>Watch</span>
+            Nightwatch
           </h1>
           <div className="wordmark-rule" />
           <p className="mx-auto mt-5 max-w-xl text-base font-light leading-7 text-slate-200/80 sm:text-lg">
