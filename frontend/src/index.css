@@ -71,14 +71,14 @@
     height: 1px;
     width: min(24rem, 74vw);
     margin: 0.5rem auto 0;
-    background: linear-gradient(90deg, transparent, rgba(255, 247, 207, 0.18), rgba(244, 200, 91, 0.58), rgba(240, 163, 91, 0.38), rgba(139, 191, 184, 0.22), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 247, 207, 0.18), rgba(244, 200, 91, 0.58), rgba(240, 163, 91, 0.38), rgba(198, 109, 90, 0.24), transparent);
     box-shadow: 0 0 18px rgba(244, 200, 91, 0.14);
   }
 
   .glass-panel {
     border: 1px solid rgba(248, 243, 231, 0.13);
     background:
-      linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(244, 200, 91, 0.036) 36%, rgba(240, 163, 91, 0.028) 68%, rgba(139, 191, 184, 0.022)),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(244, 200, 91, 0.036) 36%, rgba(240, 163, 91, 0.028) 68%, rgba(198, 109, 90, 0.022)),
       rgba(5, 9, 16, 0.74);
     box-shadow: 0 26px 90px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.06);
     backdrop-filter: blur(24px) saturate(140%);
@@ -92,10 +92,10 @@
   }
 
   .gold-button {
-    background: linear-gradient(135deg, #fff1a8 0%, #f4c85b 34%, #d99a3d 66%, #8bbfb8 100%);
+    background: linear-gradient(135deg, #fff1a8 0%, #f4c85b 34%, #d99a3d 66%, #c66d5a 100%);
     color: #fffdf2;
     text-shadow: 0 1px 10px rgba(53, 34, 7, 0.36);
-    box-shadow: 0 14px 30px rgba(244, 200, 91, 0.19), 0 10px 30px rgba(139, 191, 184, 0.12);
+    box-shadow: 0 14px 30px rgba(244, 200, 91, 0.19), 0 10px 30px rgba(198, 109, 90, 0.12);
   }
 
   .gold-button:hover:not(:disabled) {
@@ -324,7 +324,7 @@
     }
     62% {
       background-position: 88% 50%;
-      filter: drop-shadow(0 0 18px rgba(139, 191, 184, 0.16));
+      filter: drop-shadow(0 0 18px rgba(198, 109, 90, 0.16));
     }
   }
 

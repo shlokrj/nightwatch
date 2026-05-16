@@ -6,6 +6,8 @@ const STAR_LAYERS = [
   { count: 46, radius: [1.15, 2.08], alpha: [0.52, 1], speed: [0.1, 0.22], glow: true },
 ];
 const DUST_COUNT = 520;
+const SHOOTING_STAR_CYCLE = 19.5;
+const SHOOTING_STAR_DURATION = 2;
 
 function createRandom(seed) {
   let value = seed;
@@ -56,6 +58,20 @@ function makeDust() {
   }).filter((p) => p.x > -0.08 && p.x < 1.08 && p.y > -0.08 && p.y < 1.08);
 }
 
+function makeShootingStars() {
+  const random = createRandom(4182026);
+
+  return Array.from({ length: 4 }, (_, index) => ({
+    delay: index * 12.5 + randomBetween(random, 0.4, 3.0),
+    x: randomBetween(random, 0.12, 0.92),
+    y: randomBetween(random, 0.05, 0.46),
+    length: randomBetween(random, 120, 220),
+    angle: randomBetween(random, Math.PI * 0.16, Math.PI * 0.22),
+    speed: randomBetween(random, 420, 620),
+    width: randomBetween(random, 1.1, 1.7),
+  }));
+}
+
 export default function StarField() {
   const canvasRef = useRef(null);
 
@@ -64,6 +80,8 @@ export default function StarField() {
     const ctx = canvas.getContext("2d");
     const stars = makeStars();
     const dust = makeDust();
+    const shootingStars = makeShootingStars();
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let animId;
     let width = 0;
     let height = 0;
@@ -97,9 +115,9 @@ export default function StarField() {
       ctx.globalCompositeOperation = "screen";
       for (const point of dust) {
         const alpha = point.alpha * (0.76 + 0.24 * Math.sin(seconds * 0.28 + point.x * 9));
-        const tealGlimmer = point.tone > 0.76;
-        ctx.fillStyle = tealGlimmer
-          ? `rgba(139, 191, 184, ${alpha * 0.38})`
+        const roseGlimmer = point.tone > 0.76;
+        ctx.fillStyle = roseGlimmer
+          ? `rgba(198, 109, 90, ${alpha * 0.34})`
           : `rgba(244, 210, 142, ${alpha * 0.78})`;
         ctx.beginPath();
         ctx.arc(point.x * width, point.y * height, point.r, 0, Math.PI * 2);
@@ -142,6 +160,46 @@ export default function StarField() {
         ctx.fill();
       }
       ctx.restore();
+
+      if (!reduceMotion) {
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        for (const star of shootingStars) {
+          const phase = (seconds - star.delay + SHOOTING_STAR_CYCLE) % SHOOTING_STAR_CYCLE;
+          if (phase > SHOOTING_STAR_DURATION) continue;
+
+          const progress = phase / SHOOTING_STAR_DURATION;
+          const fade = Math.sin(progress * Math.PI);
+          const travel = star.speed * progress;
+          const headX = star.x * width + Math.cos(star.angle) * travel;
+          const headY = star.y * height + Math.sin(star.angle) * travel;
+          const tailX = headX - Math.cos(star.angle) * star.length;
+          const tailY = headY - Math.sin(star.angle) * star.length;
+          const streak = ctx.createLinearGradient(tailX, tailY, headX, headY);
+
+          streak.addColorStop(0, "rgba(244, 200, 91, 0)");
+          streak.addColorStop(0.42, `rgba(217, 154, 61, ${fade * 0.24})`);
+          streak.addColorStop(0.78, `rgba(255, 247, 207, ${fade * 0.72})`);
+          streak.addColorStop(1, `rgba(255, 255, 244, ${fade})`);
+
+          ctx.strokeStyle = streak;
+          ctx.lineWidth = star.width;
+          ctx.lineCap = "round";
+          ctx.beginPath();
+          ctx.moveTo(tailX, tailY);
+          ctx.lineTo(headX, headY);
+          ctx.stroke();
+
+          const flare = ctx.createRadialGradient(headX, headY, 0, headX, headY, 18);
+          flare.addColorStop(0, `rgba(255, 247, 207, ${fade * 0.5})`);
+          flare.addColorStop(1, "rgba(240, 163, 91, 0)");
+          ctx.fillStyle = flare;
+          ctx.beginPath();
+          ctx.arc(headX, headY, 18, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
 
       const vignette = ctx.createRadialGradient(width * 0.5, height * 0.42, 0, width * 0.5, height * 0.5, Math.max(width, height) * 0.78);
       vignette.addColorStop(0, "rgba(2, 3, 10, 0)");

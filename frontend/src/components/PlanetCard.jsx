@@ -44,7 +44,7 @@ export default function PlanetCard({ planet }) {
     color: "#d99a3d",
     highlight: "#fff7cf",
     glow: "rgba(244, 200, 91, 0.22)",
-    meterEnd: "#8bbfb8",
+    meterEnd: "#c66d5a",
   };
   const altitude = Math.max(0, Math.min(90, Number(planet.altitude) || 0));
   const altitudeWidth = `${(altitude / 90) * 100}%`;

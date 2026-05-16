@@ -14,7 +14,7 @@ export default {
         stellar: {
           ember: "#f0a35b",
           crimson: "#c97842",
-          violet: "#8bbfb8",
+          violet: "#c66d5a",
           pink: "#f6d36f",
           gold: "#f4c85b",
           pearl: "#f8f3e7",
@@ -29,7 +29,7 @@ export default {
       },
       boxShadow: {
         observatory: "0 26px 90px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.06)",
-        aurora: "0 0 28px rgba(244, 200, 91, 0.18), 0 0 64px rgba(139, 191, 184, 0.14)",
+        aurora: "0 0 28px rgba(244, 200, 91, 0.18), 0 0 64px rgba(198, 109, 90, 0.14)",
       },
     },
   },
