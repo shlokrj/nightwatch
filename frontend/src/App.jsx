@@ -30,7 +30,7 @@ export default function App() {
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col items-center gap-10 px-5 pb-20 pt-12 sm:gap-12 sm:pt-16">
         <header className="w-full text-center">
-          <p className="font-elegant text-xl font-semibold text-stellar-gold/90 sm:text-2xl">
+          <p className="font-elegant text-xl font-semibold text-slate-200/80 sm:text-2xl">
             Your stargazing guide
           </p>
           <h1
