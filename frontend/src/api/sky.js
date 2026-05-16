@@ -1,5 +1,5 @@
 const BASE = "/api/sky";
-const REPORT_CACHE_SCHEMA = "time-labels-v2";
+const REPORT_CACHE_SCHEMA = "time-labels-v3";
 const reportCache = new Map();
 
 function getBrowserTimezone() {

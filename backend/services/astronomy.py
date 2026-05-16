@@ -39,6 +39,50 @@ TIMEZONE_ABBREVIATION_OVERRIDES = {
     "America/Rio_Branco": "ACT",
     "America/Santarem": "BRT",
     "America/Sao_Paulo": "BRT",
+    "Asia/Aden": "AST",
+    "Asia/Aqtau": "AQTT",
+    "Asia/Aqtobe": "AQTT",
+    "Asia/Ashgabat": "TMT",
+    "Asia/Ashkhabad": "TMT",
+    "Asia/Atyrau": "AQTT",
+    "Asia/Baghdad": "AST",
+    "Asia/Bahrain": "AST",
+    "Asia/Baku": "AZT",
+    "Asia/Bangkok": "ICT",
+    "Asia/Brunei": "BNT",
+    "Asia/Colombo": "SLST",
+    "Asia/Dacca": "BST",
+    "Asia/Dhaka": "BST",
+    "Asia/Dubai": "GST",
+    "Asia/Dushanbe": "TJT",
+    "Asia/Ho_Chi_Minh": "ICT",
+    "Asia/Kabul": "AFT",
+    "Asia/Kashgar": "XJT",
+    "Asia/Kathmandu": "NPT",
+    "Asia/Katmandu": "NPT",
+    "Asia/Kuala_Lumpur": "MYT",
+    "Asia/Kuching": "MYT",
+    "Asia/Kuwait": "AST",
+    "Asia/Muscat": "GST",
+    "Asia/Oral": "AQTT",
+    "Asia/Phnom_Penh": "ICT",
+    "Asia/Qatar": "AST",
+    "Asia/Qyzylorda": "QYZT",
+    "Asia/Rangoon": "MMT",
+    "Asia/Riyadh": "AST",
+    "Asia/Saigon": "ICT",
+    "Asia/Samarkand": "UZT",
+    "Asia/Singapore": "SGT",
+    "Asia/Tashkent": "UZT",
+    "Asia/Tbilisi": "GET",
+    "Asia/Tehran": "IRST",
+    "Asia/Urumqi": "XJT",
+    "Asia/Vientiane": "ICT",
+    "Asia/Yangon": "MMT",
+    "Asia/Yerevan": "AMT",
+    "Indian/Maldives": "MVT",
+    "Indian/Mauritius": "MUT",
+    "Indian/Reunion": "RET",
 }
 
 DIRECTION_LABELS = [
@@ -83,7 +127,20 @@ def _timezone_abbreviation(tz: ZoneInfo, target_date: date) -> str:
         return TIMEZONE_ABBREVIATION_OVERRIDES[tz.key]
 
     local_noon = datetime.combine(target_date, time(hour=12), tzinfo=tz)
-    return local_noon.tzname() or tz.key
+    timezone_name = local_noon.tzname()
+    if timezone_name and not timezone_name.startswith(("+", "-")):
+        return timezone_name
+
+    offset = local_noon.utcoffset()
+    if offset is None:
+        return timezone_name or tz.key
+
+    total_minutes = int(offset.total_seconds() // 60)
+    sign = "+" if total_minutes >= 0 else "-"
+    hours, minutes = divmod(abs(total_minutes), 60)
+    if minutes:
+        return f"UTC{sign}{hours}:{minutes:02d}"
+    return f"UTC{sign}{hours}"
 
 
 def _zoneinfo_or_utc(tz_name: str | None) -> ZoneInfo:
