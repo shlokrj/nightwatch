@@ -97,9 +97,9 @@ export default function StarField() {
       ctx.globalCompositeOperation = "screen";
       for (const point of dust) {
         const alpha = point.alpha * (0.76 + 0.24 * Math.sin(seconds * 0.28 + point.x * 9));
-        const blush = point.tone > 0.74;
-        ctx.fillStyle = blush
-          ? `rgba(213, 138, 195, ${alpha * 0.42})`
+        const tealGlimmer = point.tone > 0.76;
+        ctx.fillStyle = tealGlimmer
+          ? `rgba(139, 191, 184, ${alpha * 0.38})`
           : `rgba(244, 210, 142, ${alpha * 0.78})`;
         ctx.beginPath();
         ctx.arc(point.x * width, point.y * height, point.r, 0, Math.PI * 2);
@@ -119,8 +119,8 @@ export default function StarField() {
         if (s.glow) {
           const glow = ctx.createRadialGradient(x, y, 0, x, y, s.r * 7);
           glow.addColorStop(0, `rgba(255, 242, 199, ${alpha * 0.33})`);
-          glow.addColorStop(0.42, `rgba(233, 163, 107, ${alpha * 0.1})`);
-          glow.addColorStop(1, "rgba(233, 163, 107, 0)");
+          glow.addColorStop(0.42, `rgba(244, 200, 91, ${alpha * 0.1})`);
+          glow.addColorStop(1, "rgba(244, 200, 91, 0)");
           ctx.fillStyle = glow;
           ctx.beginPath();
           ctx.arc(x, y, s.r * 7, 0, Math.PI * 2);

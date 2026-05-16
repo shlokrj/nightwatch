@@ -37,7 +37,8 @@
     padding: 0.02em 0.12em 0.18em;
     color: transparent;
     background:
-      linear-gradient(90deg, #e9a36b 0%, #d76673 34%, #9272cf 70%, #d58ac3 100%);
+      linear-gradient(100deg, #fff7cf 0%, #f4c85b 24%, #d99a3d 48%, #f6d36f 68%, #f0a35b 84%, #fff4b8 100%);
+    background-size: 240% 100%;
     -webkit-background-clip: text;
     background-clip: text;
     font-family: "Cormorant Garamond", "Cinzel Decorative", Georgia, serif;
@@ -45,10 +46,11 @@
     font-weight: 700;
     font-variant-ligatures: discretionary-ligatures;
     line-height: 1.12;
+    animation: wordmark-gold-shimmer 7s ease-in-out infinite;
     text-shadow:
-      0 0 14px rgba(213, 138, 195, 0.18),
-      0 0 34px rgba(146, 114, 207, 0.18),
-      0 0 56px rgba(215, 102, 115, 0.12);
+      0 0 14px rgba(246, 211, 111, 0.22),
+      0 0 34px rgba(217, 154, 61, 0.2),
+      0 0 58px rgba(240, 163, 91, 0.14);
   }
 
   .wordmark::before {
@@ -57,24 +59,26 @@
     inset: -0.08em -0.18em 0;
     z-index: -1;
     background:
-      radial-gradient(circle at 16% 46%, rgba(233, 163, 107, 0.15), transparent 30%),
-      radial-gradient(circle at 50% 48%, rgba(215, 102, 115, 0.12), transparent 32%),
-      radial-gradient(circle at 84% 46%, rgba(213, 138, 195, 0.14), transparent 35%);
+      radial-gradient(circle at 15% 46%, rgba(255, 247, 207, 0.16), transparent 30%),
+      radial-gradient(circle at 48% 48%, rgba(244, 200, 91, 0.16), transparent 33%),
+      radial-gradient(circle at 84% 46%, rgba(240, 163, 91, 0.14), transparent 35%);
     filter: blur(20px);
-    opacity: 0.78;
+    opacity: 0.82;
+    animation: wordmark-halo-sweep 7s ease-in-out infinite;
   }
 
   .wordmark-rule {
     height: 1px;
     width: min(24rem, 74vw);
     margin: 0.5rem auto 0;
-    background: linear-gradient(90deg, transparent, rgba(233, 163, 107, 0.38), rgba(215, 102, 115, 0.36), rgba(146, 114, 207, 0.35), rgba(213, 138, 195, 0.34), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255, 247, 207, 0.18), rgba(244, 200, 91, 0.58), rgba(240, 163, 91, 0.38), rgba(139, 191, 184, 0.22), transparent);
+    box-shadow: 0 0 18px rgba(244, 200, 91, 0.14);
   }
 
   .glass-panel {
     border: 1px solid rgba(248, 243, 231, 0.13);
     background:
-      linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(215, 102, 115, 0.025) 38%, rgba(146, 114, 207, 0.03) 72%, rgba(213, 138, 195, 0.024)),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.07), rgba(244, 200, 91, 0.036) 36%, rgba(240, 163, 91, 0.028) 68%, rgba(139, 191, 184, 0.022)),
       rgba(5, 9, 16, 0.74);
     box-shadow: 0 26px 90px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.06);
     backdrop-filter: blur(24px) saturate(140%);
@@ -88,9 +92,10 @@
   }
 
   .gold-button {
-    background: linear-gradient(135deg, #e9a36b 0%, #d76673 42%, #9272cf 78%, #d58ac3 100%);
-    color: #fff9f6;
-    box-shadow: 0 14px 30px rgba(215, 102, 115, 0.17), 0 10px 30px rgba(146, 114, 207, 0.14);
+    background: linear-gradient(135deg, #fff1a8 0%, #f4c85b 34%, #d99a3d 66%, #8bbfb8 100%);
+    color: #fffdf2;
+    text-shadow: 0 1px 10px rgba(53, 34, 7, 0.36);
+    box-shadow: 0 14px 30px rgba(244, 200, 91, 0.19), 0 10px 30px rgba(139, 191, 184, 0.12);
   }
 
   .gold-button:hover:not(:disabled) {
@@ -104,8 +109,8 @@
   }
 
   .input-glow:focus {
-    border-color: rgba(213, 138, 195, 0.58);
-    box-shadow: 0 0 0 4px rgba(215, 102, 115, 0.09), 0 0 32px rgba(146, 114, 207, 0.11);
+    border-color: rgba(244, 200, 91, 0.64);
+    box-shadow: 0 0 0 4px rgba(244, 200, 91, 0.1), 0 0 34px rgba(240, 163, 91, 0.14);
   }
 
   .moon-orb {
@@ -119,7 +124,7 @@
     box-shadow:
       inset -18px -22px 34px rgba(14, 18, 24, 0.42),
       0 0 34px rgba(248, 243, 231, 0.18),
-      0 0 62px rgba(213, 138, 195, 0.08);
+      0 0 62px rgba(244, 200, 91, 0.08);
   }
 
   .moon-orb::before {
@@ -305,5 +310,40 @@
     border-radius: inherit;
     background: rgba(255, 255, 255, 0.52);
     opacity: 0.42;
+  }
+
+  @keyframes wordmark-gold-shimmer {
+    0%,
+    100% {
+      background-position: 0% 50%;
+      filter: drop-shadow(0 0 12px rgba(244, 200, 91, 0.16));
+    }
+    45% {
+      background-position: 100% 50%;
+      filter: drop-shadow(0 0 24px rgba(255, 247, 207, 0.28));
+    }
+    62% {
+      background-position: 88% 50%;
+      filter: drop-shadow(0 0 18px rgba(139, 191, 184, 0.16));
+    }
+  }
+
+  @keyframes wordmark-halo-sweep {
+    0%,
+    100% {
+      opacity: 0.6;
+      transform: translateX(-0.6rem) scaleX(0.96);
+    }
+    50% {
+      opacity: 0.92;
+      transform: translateX(0.6rem) scaleX(1.02);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wordmark,
+    .wordmark::before {
+      animation: none;
+    }
   }
 }
