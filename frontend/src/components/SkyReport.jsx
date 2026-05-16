@@ -24,9 +24,18 @@ function formatReportDate(date) {
   });
 }
 
+function formatTimezoneName(timezone) {
+  if (!timezone) return "Unknown";
+  const city = timezone.split("/").pop();
+  return city ? city.replaceAll("_", " ") : timezone;
+}
+
 export default function SkyReport({ report }) {
   const visiblePlanets = report.planets.filter((p) => p.visible);
   const displayDate = formatReportDate(report.date);
+  const placeTime = formatTimezoneName(report.place_timezone);
+  const userTime = formatTimezoneName(report.user_timezone);
+  const sameTimezone = report.place_timezone === report.user_timezone;
 
   return (
     <div className="w-full max-w-5xl space-y-6">
@@ -43,6 +52,16 @@ export default function SkyReport({ report }) {
           <p className="rounded-full border border-stellar-gold/35 bg-stellar-gold/10 px-4 py-2 text-sm font-semibold text-stellar-gold">
             {displayDate}
           </p>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2 text-sm text-slate-200/65">
+          <span className="rounded-full border border-stellar-pearl/10 bg-stellar-pearl/5 px-3 py-1">
+            Place time: <span className="text-stellar-pearl">{placeTime}</span>
+          </span>
+          {report.user_timezone && (
+            <span className="rounded-full border border-stellar-pearl/10 bg-stellar-pearl/5 px-3 py-1">
+              Your time: <span className="text-stellar-pearl">{sameTimezone ? "same" : userTime}</span>
+            </span>
+          )}
         </div>
         <p className="mt-6 max-w-4xl text-lg font-light leading-8 text-slate-100/80">
           {report.summary}

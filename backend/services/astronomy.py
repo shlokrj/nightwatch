@@ -1,10 +1,13 @@
-from datetime import date, datetime, timezone
+from datetime import date, datetime, time, timedelta, timezone
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from skyfield.api import load, wgs84, N, E
 from skyfield import almanac
+from timezonefinder import TimezoneFinder
 
 # Skyfield timescale and ephemeris (loaded once at module level)
 _ts = load.timescale()
 _eph = load("de421.bsp")
+_tf = TimezoneFinder()
 
 PLANETS = ["venus", "mars", "jupiter barycenter", "saturn barycenter", "mercury"]
 
@@ -12,6 +15,17 @@ DIRECTION_LABELS = [
     (22.5, "N"), (67.5, "NE"), (112.5, "E"), (157.5, "SE"),
     (202.5, "S"), (247.5, "SW"), (292.5, "W"), (337.5, "NW"), (360.0, "N"),
 ]
+
+DIRECTION_PHRASES = {
+    "N": "northern",
+    "NE": "northeastern",
+    "E": "eastern",
+    "SE": "southeastern",
+    "S": "southern",
+    "SW": "southwestern",
+    "W": "western",
+    "NW": "northwestern",
+}
 
 
 def _azimuth_to_direction(az: float) -> str:
@@ -21,26 +35,63 @@ def _azimuth_to_direction(az: float) -> str:
     return "N"
 
 
-def _fmt_time(t) -> str:
-    dt = t.utc_datetime().astimezone()
-    return dt.strftime("%-I:%M %p")
+def _fmt_time(t, tz: ZoneInfo) -> str:
+    dt = t.utc_datetime().astimezone(tz)
+    return dt.strftime("%-I:%M %p %Z")
 
 
-def get_sky_report(lat: float, lon: float, target_date: date) -> dict:
+def _timezone_name_for_location(lat: float, lon: float) -> str:
+    return _tf.timezone_at(lat=lat, lng=lon) or "UTC"
+
+
+def _zoneinfo_or_utc(tz_name: str | None) -> ZoneInfo:
+    if not tz_name:
+        return ZoneInfo("UTC")
+    try:
+        return ZoneInfo(tz_name)
+    except ZoneInfoNotFoundError:
+        return ZoneInfo("UTC")
+
+
+def _time_window_for_local_date(target_date: date, tz: ZoneInfo):
+    start = datetime.combine(target_date, time.min, tzinfo=tz)
+    end = start + timedelta(days=1)
+    return _ts.from_datetime(start.astimezone(timezone.utc)), _ts.from_datetime(end.astimezone(timezone.utc))
+
+
+def _time_at_local_hour(target_date: date, hour: int, tz: ZoneInfo):
+    dt = datetime.combine(target_date, time(hour=hour), tzinfo=tz)
+    return _ts.from_datetime(dt.astimezone(timezone.utc))
+
+
+def get_sky_report(
+    lat: float,
+    lon: float,
+    target_date: date | None = None,
+    user_timezone: str | None = None,
+) -> dict:
+    place_timezone = _timezone_name_for_location(lat, lon)
+    place_tz = _zoneinfo_or_utc(place_timezone)
+    user_tz = _zoneinfo_or_utc(user_timezone)
+    user_timezone = user_tz.key if user_timezone else None
+    if target_date is None:
+        target_date = datetime.now(place_tz).date()
+
     observer = wgs84.latlon(lat * N, lon * E)
 
-    # Build a time window covering the full day
-    t0 = _ts.utc(target_date.year, target_date.month, target_date.day, 0)
-    t1 = _ts.utc(target_date.year, target_date.month, target_date.day + 1, 0)
+    # Build a time window covering the searched place's local day.
+    t0, t1 = _time_window_for_local_date(target_date, place_tz)
 
     # --- Sun events ---
     sun_times, sun_events = almanac.find_discrete(t0, t1, almanac.sunrise_sunset(_eph, observer))
     sunset = sunrise = None
+    sunset_t = None
     for t, e in zip(sun_times, sun_events):
         if e == 1 and sunrise is None:
-            sunrise = _fmt_time(t)
+            sunrise = _fmt_time(t, place_tz)
         if e == 0:
-            sunset = _fmt_time(t)
+            sunset = _fmt_time(t, place_tz)
+            sunset_t = t
 
     # --- Twilight ---
     twilight_fn = almanac.dark_twilight_day(_eph, observer)
@@ -48,18 +99,20 @@ def get_sky_report(lat: float, lon: float, target_date: date) -> dict:
 
     civil_end = nautical_end = astro_end = None
     for t, e in zip(twi_times, twi_events):
-        # events go 4→3→2→1→0 (day→civil→nautical→astro→night)
-        if e == 3 and civil_end is None:
-            civil_end = _fmt_time(t)
-        if e == 2 and nautical_end is None:
-            nautical_end = _fmt_time(t)
-        if e == 1 and astro_end is None:
-            astro_end = _fmt_time(t)
+        if sunset_t is not None and t.tt < sunset_t.tt:
+            continue
+        # Evening events go 3→2→1→0 (civil→nautical→astronomical→night).
+        if e == 2 and civil_end is None:
+            civil_end = _fmt_time(t, place_tz)
+        if e == 1 and nautical_end is None:
+            nautical_end = _fmt_time(t, place_tz)
+        if e == 0 and astro_end is None:
+            astro_end = _fmt_time(t, place_tz)
 
     # --- Moon ---
     moon = _eph["moon"]
     earth = _eph["earth"]
-    t_mid = _ts.utc(target_date.year, target_date.month, target_date.day, 21)  # 9 PM local approx
+    t_mid = _time_at_local_hour(target_date, 21, place_tz)
     astrometric = (earth + observer).at(t_mid).observe(moon)
     alt, az, _ = astrometric.apparent().altaz()
 
@@ -71,9 +124,9 @@ def get_sky_report(lat: float, lon: float, target_date: date) -> dict:
     moon_rise = moon_set = None
     for t, e in zip(*moon_rise_set):
         if e == 1 and moon_rise is None:
-            moon_rise = _fmt_time(t)
+            moon_rise = _fmt_time(t, place_tz)
         if e == 0 and moon_set is None:
-            moon_set = _fmt_time(t)
+            moon_set = _fmt_time(t, place_tz)
 
     moon_info = {
         "phase": phase_name,
@@ -95,7 +148,7 @@ def get_sky_report(lat: float, lon: float, target_date: date) -> dict:
         mag = _rough_magnitude(planet_name)
 
         # find best viewing time (highest altitude after sunset)
-        best_time = _best_viewing_time(earth, observer, body, t0, t1) if visible else None
+        best_time = _best_viewing_time(earth, observer, body, t0, t1, place_tz) if visible else None
 
         planet_data.append({
             "name": planet_name.replace(" barycenter", "").title(),
@@ -111,6 +164,9 @@ def get_sky_report(lat: float, lon: float, target_date: date) -> dict:
 
     return {
         "sunset": sunset or "N/A",
+        "date": str(target_date),
+        "place_timezone": place_timezone,
+        "user_timezone": user_timezone,
         "sunrise": sunrise or "N/A",
         "civil_twilight_end": civil_end or "N/A",
         "nautical_twilight_end": nautical_end or "N/A",
@@ -121,7 +177,7 @@ def get_sky_report(lat: float, lon: float, target_date: date) -> dict:
     }
 
 
-def _best_viewing_time(earth, observer, body, t0, t1) -> str | None:
+def _best_viewing_time(earth, observer, body, t0, t1, tz: ZoneInfo) -> str | None:
     times = [t0.tt + i * (t1.tt - t0.tt) / 48 for i in range(48)]
     best_alt = -90
     best_t = None
@@ -134,7 +190,7 @@ def _best_viewing_time(earth, observer, body, t0, t1) -> str | None:
             best_t = t
     if best_alt < 5:
         return None
-    return _fmt_time(best_t)
+    return _fmt_time(best_t, tz)
 
 
 def _rough_magnitude(planet_name: str) -> float:
@@ -186,7 +242,8 @@ def _generate_summary(planets: list, moon: dict, sunset: str | None, astro_end: 
     if visible:
         planet_lines = []
         for p in visible:
-            planet_lines.append(f"{p['name']} in the {p['direction'].lower()}ern sky")
+            direction = DIRECTION_PHRASES.get(p["direction"], p["direction"].lower())
+            planet_lines.append(f"{p['name']} in the {direction} sky")
         parts.append("Tonight you can see: " + ", ".join(planet_lines) + ".")
     else:
         parts.append("No bright planets are well-placed for viewing tonight.")

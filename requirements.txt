@@ -5,3 +5,4 @@ geopy==2.4.1
 httpx==0.28.1
 python-dotenv==1.0.1
 pydantic==2.10.3
+timezonefinder==6.5.9

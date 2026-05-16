@@ -22,6 +22,8 @@ class MoonInfo(BaseModel):
 class SkyReport(BaseModel):
     city: str
     date: str
+    place_timezone: str
+    user_timezone: str | None = None
     latitude: float
     longitude: float
     sunset: str
