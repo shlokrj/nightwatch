@@ -11,6 +11,36 @@ _tf = TimezoneFinder()
 
 PLANETS = ["venus", "mars", "jupiter barycenter", "saturn barycenter", "mercury"]
 
+TIMEZONE_ABBREVIATION_OVERRIDES = {
+    "America/Argentina/Buenos_Aires": "ART",
+    "America/Argentina/Catamarca": "ART",
+    "America/Argentina/Cordoba": "ART",
+    "America/Argentina/Jujuy": "ART",
+    "America/Argentina/La_Rioja": "ART",
+    "America/Argentina/Mendoza": "ART",
+    "America/Argentina/Rio_Gallegos": "ART",
+    "America/Argentina/Salta": "ART",
+    "America/Argentina/San_Juan": "ART",
+    "America/Argentina/San_Luis": "ART",
+    "America/Argentina/Tucuman": "ART",
+    "America/Argentina/Ushuaia": "ART",
+    "America/Bahia": "BRT",
+    "America/Belem": "BRT",
+    "America/Boa_Vista": "AMT",
+    "America/Campo_Grande": "AMT",
+    "America/Cuiaba": "AMT",
+    "America/Eirunepe": "ACT",
+    "America/Fortaleza": "BRT",
+    "America/Maceio": "BRT",
+    "America/Manaus": "AMT",
+    "America/Noronha": "FNT",
+    "America/Porto_Velho": "AMT",
+    "America/Recife": "BRT",
+    "America/Rio_Branco": "ACT",
+    "America/Santarem": "BRT",
+    "America/Sao_Paulo": "BRT",
+}
+
 DIRECTION_LABELS = [
     (22.5, "N"), (67.5, "NE"), (112.5, "E"), (157.5, "SE"),
     (202.5, "S"), (247.5, "SW"), (292.5, "W"), (337.5, "NW"), (360.0, "N"),
@@ -37,7 +67,7 @@ def _azimuth_to_direction(az: float) -> str:
 
 def _fmt_time(t, tz: ZoneInfo) -> str:
     dt = t.utc_datetime().astimezone(tz)
-    return dt.strftime("%-I:%M %p %Z")
+    return f"{dt.strftime('%-I:%M %p')} {_timezone_abbreviation(tz, dt.date())}"
 
 
 def _fmt_timestamp(t) -> str:
@@ -49,6 +79,9 @@ def _timezone_name_for_location(lat: float, lon: float) -> str:
 
 
 def _timezone_abbreviation(tz: ZoneInfo, target_date: date) -> str:
+    if tz.key in TIMEZONE_ABBREVIATION_OVERRIDES:
+        return TIMEZONE_ABBREVIATION_OVERRIDES[tz.key]
+
     local_noon = datetime.combine(target_date, time(hour=12), tzinfo=tz)
     return local_noon.tzname() or tz.key
 

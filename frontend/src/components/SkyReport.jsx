@@ -53,7 +53,7 @@ function formatTimezoneLabel(timezone, abbreviation) {
   return `${abbreviation} (e.g. ${examplePlace})`;
 }
 
-function formatReportTime(timestamp, timezone, fallback = "N/A") {
+function formatReportTime(timestamp, timezone, abbreviation, fallback = "N/A") {
   if (!timestamp || !timezone) return fallback;
 
   const parsed = new Date(timestamp);
@@ -67,8 +67,7 @@ function formatReportTime(timestamp, timezone, fallback = "N/A") {
       minute: "2-digit",
       hour12: true,
       timeZone: timezone,
-      timeZoneName: "short",
-    }).format(parsed);
+    }).format(parsed) + (abbreviation ? ` ${abbreviation}` : "");
   } catch {
     return fallback;
   }
@@ -127,46 +126,78 @@ export default function SkyReport({ report }) {
   const sameTimezone = report.place_timezone === report.user_timezone;
   const selectedTimezone =
     timeMode === "user" && report.user_timezone ? report.user_timezone : report.place_timezone;
+  const selectedTimezoneAbbreviation =
+    timeMode === "user" && report.user_timezone
+      ? report.user_timezone_abbreviation
+      : report.place_timezone_abbreviation;
 
   const displayedTimes = useMemo(
     () => ({
-      sunset: formatReportTime(report.sunset_at, selectedTimezone, report.sunset),
-      sunrise: formatReportTime(report.sunrise_at, selectedTimezone, report.sunrise),
+      sunset: formatReportTime(
+        report.sunset_at,
+        selectedTimezone,
+        selectedTimezoneAbbreviation,
+        report.sunset,
+      ),
+      sunrise: formatReportTime(
+        report.sunrise_at,
+        selectedTimezone,
+        selectedTimezoneAbbreviation,
+        report.sunrise,
+      ),
       civilTwilightEnd: formatReportTime(
         report.civil_twilight_end_at,
         selectedTimezone,
+        selectedTimezoneAbbreviation,
         report.civil_twilight_end,
       ),
       nauticalTwilightEnd: formatReportTime(
         report.nautical_twilight_end_at,
         selectedTimezone,
+        selectedTimezoneAbbreviation,
         report.nautical_twilight_end,
       ),
       astronomicalTwilightEnd: formatReportTime(
         report.astronomical_twilight_end_at,
         selectedTimezone,
+        selectedTimezoneAbbreviation,
         report.astronomical_twilight_end,
       ),
     }),
-    [report, selectedTimezone],
+    [report, selectedTimezone, selectedTimezoneAbbreviation],
   );
 
   const displayedMoon = useMemo(
     () => ({
       ...report.moon,
-      rise: formatReportTime(report.moon.rise_at, selectedTimezone, report.moon.rise),
-      set: formatReportTime(report.moon.set_at, selectedTimezone, report.moon.set),
+      rise: formatReportTime(
+        report.moon.rise_at,
+        selectedTimezone,
+        selectedTimezoneAbbreviation,
+        report.moon.rise,
+      ),
+      set: formatReportTime(
+        report.moon.set_at,
+        selectedTimezone,
+        selectedTimezoneAbbreviation,
+        report.moon.set,
+      ),
     }),
-    [report.moon, selectedTimezone],
+    [report.moon, selectedTimezone, selectedTimezoneAbbreviation],
   );
 
   const displayedPlanets = useMemo(
     () =>
       report.planets.map((planet) => ({
         ...planet,
-        best_time: formatReportTime(planet.best_time_at, selectedTimezone, planet.best_time),
+        best_time: formatReportTime(
+          planet.best_time_at,
+          selectedTimezone,
+          selectedTimezoneAbbreviation,
+          planet.best_time,
+        ),
       })),
-    [report.planets, selectedTimezone],
+    [report.planets, selectedTimezone, selectedTimezoneAbbreviation],
   );
   const visiblePlanets = displayedPlanets.filter((planet) => planet.visible);
   const summary = generateSummary(displayedMoon, displayedPlanets, displayedTimes);
