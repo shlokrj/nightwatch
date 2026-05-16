@@ -1,37 +1,26 @@
 # Nightwatch
 
-A local night sky guide where you can enter any city and get a personalized astronomy report for tonight: visible planets, moon phase, twilight times, and a simple English summary of what to look for.
+A local night sky guide where you can enter a city, landmark, campus, or address-like place and get a personalized astronomy report for tonight: visible planets, moon phase, twilight times, and a simple English summary of what to look for.
+
+## Deployment
+
+Check it out: https://nightwatch-psi.vercel.app/
 
 ## Tech stack
 
 | Layer | Tools |
 |---|---|
-| Backend | Python · FastAPI · Skyfield · Open-Meteo geocoding · geopy fallback |
-| Frontend | React · Vite · Tailwind CSS |
+| Backend | Python, FastAPI, Skyfield, geopy/Nominatim, Open-Meteo fallback, timezonefinder, tzdata |
+| Frontend | React, Vite, Tailwind CSS, Vercel Analytics |
+| Deployment | Vercel static frontend, FastAPI serverless API rewrite |
 
-## Project structure
+## Features
 
-```
-nightwatch/
-├── backend/
-│   ├── main.py               # FastAPI app entry point
-│   ├── requirements.txt
-│   ├── routers/sky.py        # /api/sky/report endpoint
-│   ├── services/
-│   │   ├── astronomy.py      # Skyfield calculations
-│   │   └── geocoding.py      # City → lat/lon with caching and fallback
-│   └── models/sky.py         # Pydantic response models
-└── frontend/
-    ├── src/
-    │   ├── App.jsx
-    │   ├── api/sky.js         # fetch wrapper
-    │   └── components/
-    │       ├── LocationSearch.jsx
-    │       ├── SkyReport.jsx
-    │       ├── MoonCard.jsx
-    │       └── PlanetCard.jsx
-    └── index.html
-```
+- Place search with Nominatim as the primary geocoder, plus rate limiting, caching, and Open-Meteo fallback.
+- Astronomy calculations with Skyfield for sunrise, sunset, twilight, moon data, and visible planets.
+- Timezone detection from coordinates with `timezonefinder`.
+- Place-time/your-time toggle backed by UTC event timestamps, so report times can be shown in either timezone.
+- Readable timezone abbreviations for common zones, with UTC-offset fallback for zones without conventional labels.
 
 ## Local development
 
@@ -55,7 +44,3 @@ npm run dev
 ```
 
 App runs at `http://localhost:5173`. API requests proxy to `:8000`.
-
-## Deployment
-
-> Work in progress: planning to deploy as a live website.
