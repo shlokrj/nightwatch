@@ -3,6 +3,7 @@ import os
 
 import httpx
 from geopy.exc import GeocoderServiceError as GeopyServiceError
+from geopy.exc import GeocoderQuotaExceeded, GeocoderRateLimited
 from geopy.exc import GeocoderTimedOut
 from geopy.extra.rate_limiter import RateLimiter
 from geopy.geocoders import Nominatim
@@ -96,7 +97,7 @@ _nominatim_geocode = RateLimiter(
 
 def geocode_city(city: str) -> tuple[float, float, str]:
     """
-    Returns (latitude, longitude, display_name) for a city string.
+    Returns (latitude, longitude, display_name) for a place search.
     Raises ValueError if the city cannot be found.
     """
     query = _normalize_city(city)
@@ -113,21 +114,21 @@ def _normalize_city(city: str) -> str:
 @lru_cache(maxsize=512)
 def _geocode_city_cached(city: str) -> tuple[float, float, str]:
     try:
-        return _geocode_with_open_meteo(city)
-    except LocationNotFoundError as open_meteo_not_found:
-        if not _should_try_nominatim_fallback(city):
-            raise
+        return _geocode_with_nominatim(city)
+    except LocationNotFoundError as nominatim_not_found:
         try:
-            return _geocode_with_nominatim(city)
+            return _geocode_with_open_meteo(city)
         except LocationNotFoundError:
-            raise open_meteo_not_found
-    except GeocodingServiceError as open_meteo_error:
-        try:
-            return _geocode_with_nominatim(city)
-        except LocationNotFoundError:
-            raise
+            raise nominatim_not_found
         except GeocodingServiceError:
-            raise open_meteo_error
+            raise nominatim_not_found
+    except GeocodingServiceError as nominatim_error:
+        try:
+            return _geocode_with_open_meteo(city)
+        except LocationNotFoundError:
+            raise nominatim_error
+        except GeocodingServiceError:
+            raise nominatim_error
 
 
 def _geocode_with_open_meteo(city: str) -> tuple[float, float, str]:
@@ -222,11 +223,6 @@ def _normalize_location_hint(value: str) -> str:
     return US_STATE_HINTS.get(normalized) or COUNTRY_HINTS.get(normalized) or normalized
 
 
-def _should_try_nominatim_fallback(city: str) -> bool:
-    normalized_city = _normalize_location_hint(city)
-    return "," in city or normalized_city in US_STATE_NAMES
-
-
 def _format_open_meteo_display_name(result: dict) -> str:
     parts = [
         result.get("name"),
@@ -243,6 +239,11 @@ def _format_open_meteo_display_name(result: dict) -> str:
 def _geocode_with_nominatim(city: str) -> tuple[float, float, str]:
     try:
         location = _nominatim_geocode(city, timeout=10)
+    except (GeocoderQuotaExceeded, GeocoderRateLimited) as e:
+        raise GeocodingServiceError(
+            "Geocoding is temporarily rate limited. Please try again shortly.",
+            retry_after=_retry_after_from_exception(e),
+        ) from e
     except (GeocoderTimedOut, GeopyServiceError) as e:
         raise GeocodingServiceError("Geocoding service is busy. Please try again in a minute.") from e
 
@@ -250,6 +251,13 @@ def _geocode_with_nominatim(city: str) -> tuple[float, float, str]:
         raise LocationNotFoundError(f"Could not find location: {city}")
 
     return location.latitude, location.longitude, location.address
+
+
+def _retry_after_from_exception(error: Exception) -> int | None:
+    retry_after = getattr(error, "retry_after", None)
+    if isinstance(retry_after, int):
+        return max(1, retry_after)
+    return 60 if "429" in str(error) else None
 
 
 def _retry_after_seconds(response: httpx.Response) -> int | None:
