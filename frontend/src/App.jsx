@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import LocationSearch from "./components/LocationSearch";
 import SkyReport from "./components/SkyReport";
 import StarField from "./components/StarField";
@@ -24,6 +25,7 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-night-950 text-stellar-pearl">
+      <Analytics />
       <StarField />
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col items-center gap-10 px-5 pb-20 pt-12 sm:gap-12 sm:pt-16">
