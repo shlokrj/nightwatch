@@ -6,7 +6,7 @@ A local night sky guide where you can enter any city and get a personalized astr
 
 | Layer | Tools |
 |---|---|
-| Backend | Python · FastAPI · Skyfield · geopy |
+| Backend | Python · FastAPI · Skyfield · Open-Meteo geocoding · geopy fallback |
 | Frontend | React · Vite · Tailwind CSS |
 
 ## Project structure
@@ -19,7 +19,7 @@ nightwatch/
 │   ├── routers/sky.py        # /api/sky/report endpoint
 │   ├── services/
 │   │   ├── astronomy.py      # Skyfield calculations
-│   │   └── geocoding.py      # City → lat/lon via geopy
+│   │   └── geocoding.py      # City → lat/lon with caching and fallback
 │   └── models/sky.py         # Pydantic response models
 └── frontend/
     ├── src/

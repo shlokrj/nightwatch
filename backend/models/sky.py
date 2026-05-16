@@ -23,7 +23,9 @@ class SkyReport(BaseModel):
     city: str
     date: str
     place_timezone: str
+    place_timezone_abbreviation: str
     user_timezone: str | None = None
+    user_timezone_abbreviation: str | None = None
     latitude: float
     longitude: float
     sunset: str

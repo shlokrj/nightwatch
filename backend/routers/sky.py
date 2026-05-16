@@ -1,6 +1,6 @@
 from datetime import date
 from fastapi import APIRouter, HTTPException, Query
-from backend.services.geocoding import geocode_city
+from backend.services.geocoding import GeocodingServiceError, LocationNotFoundError, geocode_city
 from backend.services.astronomy import get_sky_report
 from backend.models.sky import SkyReport
 
@@ -15,8 +15,11 @@ def sky_report(
 ):
     try:
         lat, lon, display_name = geocode_city(city)
-    except ValueError as e:
+    except LocationNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    except GeocodingServiceError as e:
+        headers = {"Retry-After": str(e.retry_after)} if e.retry_after else None
+        raise HTTPException(status_code=503, detail=str(e), headers=headers)
 
     try:
         data = get_sky_report(lat, lon, target_date, user_timezone)

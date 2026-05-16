@@ -31,7 +31,7 @@ export default function App() {
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col items-center gap-10 px-5 pb-20 pt-12 sm:gap-12 sm:pt-16">
         <header className="w-full text-center">
           <p className="font-elegant text-xl font-semibold text-slate-200/80 sm:text-2xl">
-            Your stargazing guide
+            Your celestial guide
           </p>
           <h1
             className="wordmark mt-3 text-6xl sm:text-8xl"

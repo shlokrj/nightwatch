@@ -44,6 +44,11 @@ def _timezone_name_for_location(lat: float, lon: float) -> str:
     return _tf.timezone_at(lat=lat, lng=lon) or "UTC"
 
 
+def _timezone_abbreviation(tz: ZoneInfo, target_date: date) -> str:
+    local_noon = datetime.combine(target_date, time(hour=12), tzinfo=tz)
+    return local_noon.tzname() or tz.key
+
+
 def _zoneinfo_or_utc(tz_name: str | None) -> ZoneInfo:
     if not tz_name:
         return ZoneInfo("UTC")
@@ -166,7 +171,9 @@ def get_sky_report(
         "sunset": sunset or "N/A",
         "date": str(target_date),
         "place_timezone": place_timezone,
+        "place_timezone_abbreviation": _timezone_abbreviation(place_tz, target_date),
         "user_timezone": user_timezone,
+        "user_timezone_abbreviation": _timezone_abbreviation(user_tz, target_date) if user_timezone else None,
         "sunrise": sunrise or "N/A",
         "civil_twilight_end": civil_end or "N/A",
         "nautical_twilight_end": nautical_end or "N/A",

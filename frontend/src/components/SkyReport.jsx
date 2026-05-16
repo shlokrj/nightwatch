@@ -30,11 +30,28 @@ function formatTimezoneName(timezone) {
   return city ? city.replaceAll("_", " ") : timezone;
 }
 
+function formatTimezoneLabel(timezone, abbreviation) {
+  if (!timezone) return "Unknown";
+
+  const examplePlace = formatTimezoneName(timezone);
+  if (!abbreviation || abbreviation === examplePlace) {
+    return examplePlace;
+  }
+
+  return `${abbreviation} (e.g. ${examplePlace})`;
+}
+
 export default function SkyReport({ report }) {
   const visiblePlanets = report.planets.filter((p) => p.visible);
   const displayDate = formatReportDate(report.date);
-  const placeTime = formatTimezoneName(report.place_timezone);
-  const userTime = formatTimezoneName(report.user_timezone);
+  const placeTime = formatTimezoneLabel(
+    report.place_timezone,
+    report.place_timezone_abbreviation,
+  );
+  const userTime = formatTimezoneLabel(
+    report.user_timezone,
+    report.user_timezone_abbreviation,
+  );
   const sameTimezone = report.place_timezone === report.user_timezone;
 
   return (
