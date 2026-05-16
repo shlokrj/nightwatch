@@ -1,4 +1,5 @@
 const BASE = "/api/sky";
+const REPORT_CACHE_SCHEMA = "time-toggle-v1";
 const reportCache = new Map();
 
 function getBrowserTimezone() {
@@ -15,7 +16,7 @@ export async function fetchSkyReport(city, date) {
   const userTimezone = getBrowserTimezone();
   if (userTimezone) params.set("user_timezone", userTimezone);
 
-  const cacheKey = `${city.toLowerCase()}|${date || ""}|${userTimezone || ""}`;
+  const cacheKey = `${REPORT_CACHE_SCHEMA}|${city.toLowerCase()}|${date || ""}|${userTimezone || ""}`;
   if (reportCache.has(cacheKey)) {
     return reportCache.get(cacheKey);
   }

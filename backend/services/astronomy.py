@@ -40,6 +40,10 @@ def _fmt_time(t, tz: ZoneInfo) -> str:
     return dt.strftime("%-I:%M %p %Z")
 
 
+def _fmt_timestamp(t) -> str:
+    return t.utc_datetime().astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
 def _timezone_name_for_location(lat: float, lon: float) -> str:
     return _tf.timezone_at(lat=lat, lng=lon) or "UTC"
 
@@ -89,30 +93,28 @@ def get_sky_report(
 
     # --- Sun events ---
     sun_times, sun_events = almanac.find_discrete(t0, t1, almanac.sunrise_sunset(_eph, observer))
-    sunset = sunrise = None
-    sunset_t = None
+    sunset_t = sunrise_t = None
     for t, e in zip(sun_times, sun_events):
-        if e == 1 and sunrise is None:
-            sunrise = _fmt_time(t, place_tz)
+        if e == 1 and sunrise_t is None:
+            sunrise_t = t
         if e == 0:
-            sunset = _fmt_time(t, place_tz)
             sunset_t = t
 
     # --- Twilight ---
     twilight_fn = almanac.dark_twilight_day(_eph, observer)
     twi_times, twi_events = almanac.find_discrete(t0, t1, twilight_fn)
 
-    civil_end = nautical_end = astro_end = None
+    civil_end_t = nautical_end_t = astro_end_t = None
     for t, e in zip(twi_times, twi_events):
         if sunset_t is not None and t.tt < sunset_t.tt:
             continue
         # Evening events go 3→2→1→0 (civil→nautical→astronomical→night).
-        if e == 2 and civil_end is None:
-            civil_end = _fmt_time(t, place_tz)
-        if e == 1 and nautical_end is None:
-            nautical_end = _fmt_time(t, place_tz)
-        if e == 0 and astro_end is None:
-            astro_end = _fmt_time(t, place_tz)
+        if e == 2 and civil_end_t is None:
+            civil_end_t = t
+        if e == 1 and nautical_end_t is None:
+            nautical_end_t = t
+        if e == 0 and astro_end_t is None:
+            astro_end_t = t
 
     # --- Moon ---
     moon = _eph["moon"]
@@ -126,18 +128,20 @@ def get_sky_report(
     phase_name = _moon_phase_name(moon_phase_angle)
 
     moon_rise_set = almanac.find_discrete(t0, t1, almanac.risings_and_settings(_eph, moon, observer))
-    moon_rise = moon_set = None
+    moon_rise_t = moon_set_t = None
     for t, e in zip(*moon_rise_set):
-        if e == 1 and moon_rise is None:
-            moon_rise = _fmt_time(t, place_tz)
-        if e == 0 and moon_set is None:
-            moon_set = _fmt_time(t, place_tz)
+        if e == 1 and moon_rise_t is None:
+            moon_rise_t = t
+        if e == 0 and moon_set_t is None:
+            moon_set_t = t
 
     moon_info = {
         "phase": phase_name,
         "illumination": illumination,
-        "rise": moon_rise,
-        "set": moon_set,
+        "rise": _fmt_time(moon_rise_t, place_tz) if moon_rise_t is not None else None,
+        "rise_at": _fmt_timestamp(moon_rise_t) if moon_rise_t is not None else None,
+        "set": _fmt_time(moon_set_t, place_tz) if moon_set_t is not None else None,
+        "set_at": _fmt_timestamp(moon_set_t) if moon_set_t is not None else None,
         "altitude": round(alt.degrees, 1),
     }
 
@@ -153,7 +157,7 @@ def get_sky_report(
         mag = _rough_magnitude(planet_name)
 
         # find best viewing time (highest altitude after sunset)
-        best_time = _best_viewing_time(earth, observer, body, t0, t1, place_tz) if visible else None
+        best_time_t = _best_viewing_time(earth, observer, body, t0, t1) if visible else None
 
         planet_data.append({
             "name": planet_name.replace(" barycenter", "").title(),
@@ -162,29 +166,40 @@ def get_sky_report(
             "direction": _azimuth_to_direction(p_az.degrees),
             "magnitude": mag,
             "visible": visible,
-            "best_time": best_time,
+            "best_time": _fmt_time(best_time_t, place_tz) if best_time_t is not None else None,
+            "best_time_at": _fmt_timestamp(best_time_t) if best_time_t is not None else None,
         })
 
+    sunset = _fmt_time(sunset_t, place_tz) if sunset_t is not None else None
+    sunrise = _fmt_time(sunrise_t, place_tz) if sunrise_t is not None else None
+    civil_end = _fmt_time(civil_end_t, place_tz) if civil_end_t is not None else None
+    nautical_end = _fmt_time(nautical_end_t, place_tz) if nautical_end_t is not None else None
+    astro_end = _fmt_time(astro_end_t, place_tz) if astro_end_t is not None else None
     summary = _generate_summary(planet_data, moon_info, sunset, astro_end)
 
     return {
         "sunset": sunset or "N/A",
+        "sunset_at": _fmt_timestamp(sunset_t) if sunset_t is not None else None,
         "date": str(target_date),
         "place_timezone": place_timezone,
         "place_timezone_abbreviation": _timezone_abbreviation(place_tz, target_date),
         "user_timezone": user_timezone,
         "user_timezone_abbreviation": _timezone_abbreviation(user_tz, target_date) if user_timezone else None,
         "sunrise": sunrise or "N/A",
+        "sunrise_at": _fmt_timestamp(sunrise_t) if sunrise_t is not None else None,
         "civil_twilight_end": civil_end or "N/A",
+        "civil_twilight_end_at": _fmt_timestamp(civil_end_t) if civil_end_t is not None else None,
         "nautical_twilight_end": nautical_end or "N/A",
+        "nautical_twilight_end_at": _fmt_timestamp(nautical_end_t) if nautical_end_t is not None else None,
         "astronomical_twilight_end": astro_end or "N/A",
+        "astronomical_twilight_end_at": _fmt_timestamp(astro_end_t) if astro_end_t is not None else None,
         "moon": moon_info,
         "planets": planet_data,
         "summary": summary,
     }
 
 
-def _best_viewing_time(earth, observer, body, t0, t1, tz: ZoneInfo) -> str | None:
+def _best_viewing_time(earth, observer, body, t0, t1):
     times = [t0.tt + i * (t1.tt - t0.tt) / 48 for i in range(48)]
     best_alt = -90
     best_t = None
@@ -197,7 +212,7 @@ def _best_viewing_time(earth, observer, body, t0, t1, tz: ZoneInfo) -> str | Non
             best_t = t
     if best_alt < 5:
         return None
-    return _fmt_time(best_t, tz)
+    return best_t
 
 
 def _rough_magnitude(planet_name: str) -> float:

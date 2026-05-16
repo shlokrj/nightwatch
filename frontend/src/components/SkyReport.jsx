@@ -1,5 +1,17 @@
+import { useEffect, useMemo, useState } from "react";
 import MoonCard from "./MoonCard";
 import PlanetCard from "./PlanetCard";
+
+const DIRECTION_PHRASES = {
+  N: "northern",
+  NE: "northeastern",
+  E: "eastern",
+  SE: "southeastern",
+  S: "southern",
+  SW: "southwestern",
+  W: "western",
+  NW: "northwestern",
+};
 
 function TimeCard({ label, value }) {
   return (
@@ -41,8 +53,68 @@ function formatTimezoneLabel(timezone, abbreviation) {
   return `${abbreviation} (e.g. ${examplePlace})`;
 }
 
+function formatReportTime(timestamp, timezone, fallback = "N/A") {
+  if (!timestamp || !timezone) return fallback;
+
+  const parsed = new Date(timestamp);
+  if (Number.isNaN(parsed.getTime())) {
+    return fallback;
+  }
+
+  try {
+    return new Intl.DateTimeFormat("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: timezone,
+      timeZoneName: "short",
+    }).format(parsed);
+  } catch {
+    return fallback;
+  }
+}
+
+function generateSummary(moon, planets, times) {
+  const parts = [];
+
+  if (times.sunset && times.sunset !== "N/A") {
+    parts.push(`Sunset is at ${times.sunset}.`);
+  }
+
+  if (times.astronomicalTwilightEnd && times.astronomicalTwilightEnd !== "N/A") {
+    parts.push(
+      `True darkness begins after astronomical twilight ends at ${times.astronomicalTwilightEnd}.`,
+    );
+  }
+
+  let moonLine = `The Moon is ${moon.phase.toLowerCase()} (${moon.illumination}% illuminated)`;
+  if (moon.rise) {
+    moonLine += `, rising at ${moon.rise}`;
+  }
+  moonLine += ".";
+  parts.push(moonLine);
+
+  const visiblePlanets = planets.filter((planet) => planet.visible);
+  if (visiblePlanets.length > 0) {
+    const planetLines = visiblePlanets.map((planet) => {
+      const direction = DIRECTION_PHRASES[planet.direction] ?? planet.direction.toLowerCase();
+      return `${planet.name} in the ${direction} sky`;
+    });
+    parts.push(`Tonight you can see: ${planetLines.join(", ")}.`);
+  } else {
+    parts.push("No bright planets are well-placed for viewing tonight.");
+  }
+
+  return parts.join(" ");
+}
+
 export default function SkyReport({ report }) {
-  const visiblePlanets = report.planets.filter((p) => p.visible);
+  const [timeMode, setTimeMode] = useState("place");
+
+  useEffect(() => {
+    setTimeMode("place");
+  }, [report]);
+
   const displayDate = formatReportDate(report.date);
   const placeTime = formatTimezoneLabel(
     report.place_timezone,
@@ -53,6 +125,64 @@ export default function SkyReport({ report }) {
     report.user_timezone_abbreviation,
   );
   const sameTimezone = report.place_timezone === report.user_timezone;
+  const selectedTimezone =
+    timeMode === "user" && report.user_timezone ? report.user_timezone : report.place_timezone;
+
+  const displayedTimes = useMemo(
+    () => ({
+      sunset: formatReportTime(report.sunset_at, selectedTimezone, report.sunset),
+      sunrise: formatReportTime(report.sunrise_at, selectedTimezone, report.sunrise),
+      civilTwilightEnd: formatReportTime(
+        report.civil_twilight_end_at,
+        selectedTimezone,
+        report.civil_twilight_end,
+      ),
+      nauticalTwilightEnd: formatReportTime(
+        report.nautical_twilight_end_at,
+        selectedTimezone,
+        report.nautical_twilight_end,
+      ),
+      astronomicalTwilightEnd: formatReportTime(
+        report.astronomical_twilight_end_at,
+        selectedTimezone,
+        report.astronomical_twilight_end,
+      ),
+    }),
+    [report, selectedTimezone],
+  );
+
+  const displayedMoon = useMemo(
+    () => ({
+      ...report.moon,
+      rise: formatReportTime(report.moon.rise_at, selectedTimezone, report.moon.rise),
+      set: formatReportTime(report.moon.set_at, selectedTimezone, report.moon.set),
+    }),
+    [report.moon, selectedTimezone],
+  );
+
+  const displayedPlanets = useMemo(
+    () =>
+      report.planets.map((planet) => ({
+        ...planet,
+        best_time: formatReportTime(planet.best_time_at, selectedTimezone, planet.best_time),
+      })),
+    [report.planets, selectedTimezone],
+  );
+  const visiblePlanets = displayedPlanets.filter((planet) => planet.visible);
+  const summary = generateSummary(displayedMoon, displayedPlanets, displayedTimes);
+
+  const timeOptions = [
+    {
+      id: "place",
+      label: "Place time",
+      value: placeTime,
+    },
+    report.user_timezone && {
+      id: "user",
+      label: "Your time",
+      value: sameTimezone ? "same" : userTime,
+    },
+  ].filter(Boolean);
 
   return (
     <div className="w-full max-w-5xl space-y-6">
@@ -70,34 +200,47 @@ export default function SkyReport({ report }) {
             {displayDate}
           </p>
         </div>
-        <div className="mt-4 flex flex-wrap gap-2 text-sm text-slate-200/65">
-          <span className="rounded-full border border-stellar-pearl/10 bg-stellar-pearl/5 px-3 py-1">
-            Place time: <span className="text-stellar-pearl">{placeTime}</span>
-          </span>
-          {report.user_timezone && (
-            <span className="rounded-full border border-stellar-pearl/10 bg-stellar-pearl/5 px-3 py-1">
-              Your time: <span className="text-stellar-pearl">{sameTimezone ? "same" : userTime}</span>
-            </span>
-          )}
+        <div className="mt-4 flex flex-wrap gap-2 text-sm" role="group" aria-label="Time display">
+          {timeOptions.map((option) => {
+            const selected = option.id === timeMode;
+            return (
+              <button
+                key={option.id}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => setTimeMode(option.id)}
+                className={`rounded-full border px-3 py-1 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-stellar-gold/70 ${
+                  selected
+                    ? "border-stellar-gold/60 bg-stellar-gold/20 text-stellar-gold shadow-[0_0_22px_rgba(236,196,104,0.16)]"
+                    : "border-stellar-pearl/10 bg-stellar-pearl/5 text-slate-200/65 hover:border-stellar-gold/35 hover:text-stellar-pearl"
+                }`}
+              >
+                {option.label}:{" "}
+                <span className={selected ? "text-stellar-pearl" : "text-stellar-pearl/90"}>
+                  {option.value}
+                </span>
+              </button>
+            );
+          })}
         </div>
         <p className="mt-6 max-w-4xl text-lg font-light leading-8 text-slate-100/80">
-          {report.summary}
+          {summary}
         </p>
       </section>
 
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {[
-          ["Sunset", report.sunset],
-          ["Civil", report.civil_twilight_end],
-          ["Nautical", report.nautical_twilight_end],
-          ["Astronomical", report.astronomical_twilight_end],
-          ["Sunrise", report.sunrise],
+          ["Sunset", displayedTimes.sunset],
+          ["Civil", displayedTimes.civilTwilightEnd],
+          ["Nautical", displayedTimes.nauticalTwilightEnd],
+          ["Astronomical", displayedTimes.astronomicalTwilightEnd],
+          ["Sunrise", displayedTimes.sunrise],
         ].map(([label, val]) => (
           <TimeCard key={label} label={label} value={val} />
         ))}
       </section>
 
-      <MoonCard moon={report.moon} />
+      <MoonCard moon={displayedMoon} />
 
       {visiblePlanets.length > 0 && (
         <section>
